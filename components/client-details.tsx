@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { Client, Lawsuit, Nda } from "@/types/Client";
+import { FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Plus, ArrowLeft, Trash2 } from "lucide-react";
+import { FileUploader } from "@/components/file-uploader";
 
 const getClientById = async (id: string): Promise<Client | null> => {
   try {
@@ -76,7 +78,10 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
   const [client, setClient] = useState<Client | null>(null);
   const [isNdaDialogOpen, setIsNdaDialogOpen] = useState(false);
   const [isLawsuitDialogOpen, setIsLawsuitDialogOpen] = useState(false);
+  const [documents, setDocuments] = useState<File[]>([]);
   const [newNda, setNewNda] = useState({ name: "", date: "" });
+  const [isUploading, setIsUploading] = useState(false);
+
   const [newLawsuit, setNewLawsuit] = useState({
     name: "",
     date: "",
@@ -93,8 +98,81 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
       });
     }
   }, [id]);
+  const handleDocumentUpload = (files: File[]) => {
+    setDocuments((prevDocuments) => [...prevDocuments, ...files]);
+  };
+  const handleDocumentUploadSubmit = async () => {
+    if (documents.length === 0) {
+      setIsNdaDialogOpen(false);
+      return;
+    }
 
-  // Handle adding new NDA
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      documents.forEach((doc) => formData.append("file", doc));
+
+      const uploadResponse = await fetch(
+        `http://localhost:8000/client/${id}/nda/upload`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+          },
+          body: formData,
+        },
+      );
+
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload documents");
+      }
+
+      console.log("Documents uploaded successfully");
+      setIsNdaDialogOpen(false);
+    } catch (error) {
+      console.error("Error uploading documents:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  const handleDocumentUploadLawSuit = (files: File[]) => {
+    setDocuments((prevDocuments) => [...prevDocuments, ...files]);
+  };
+  const handleDocumentUploadSubmitLawSuit = async () => {
+    if (documents.length === 0) {
+      setIsNdaDialogOpen(false);
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      documents.forEach((doc) => formData.append("file", doc));
+
+      const uploadResponse = await fetch(
+        `http://localhost:8000/client/${id}/lawsuit/upload`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+          },
+          body: formData,
+        },
+      );
+
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload documents");
+      }
+
+      console.log("Documents uploaded successfully");
+      setIsNdaDialogOpen(false);
+    } catch (error) {
+      console.error("Error uploading documents:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleAddNda = () => {
     if (newNda.name && newNda.date && client) {
       const updatedClient = {
@@ -196,41 +274,34 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
               <DialogHeader>
                 <DialogTitle>Add New NDA</DialogTitle>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="nda-name" className="text-right">
-                    Name
-                  </Label>
-                  <Input
-                    id="nda-name"
-                    value={newNda.name}
-                    onChange={(e) =>
-                      setNewNda({ ...newNda, name: e.target.value })
-                    }
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="nda-date" className="text-right">
-                    Date
-                  </Label>
-                  <Input
-                    id="nda-date"
-                    type="date"
-                    value={newNda.date}
-                    onChange={(e) =>
-                      setNewNda({ ...newNda, date: e.target.value })
-                    }
-                    className="col-span-3"
-                  />
-                </div>
+              <FileUploader onUpload={handleDocumentUpload} />
+              <div className="space-y-2">
+                <Label>Uploaded Documents</Label>
+                {documents.length > 0 ? (
+                  <ul className="space-y-2">
+                    {documents.map((doc, index) => (
+                      <li key={index} className="flex items-center space-x-2">
+                        <FileText className="h-4 w-4 text-[#f6c90e]" />
+                        <span className="text-sm text-gray-600">
+                          {doc.name}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No documents uploaded yet.
+                  </p>
+                )}
               </div>
               <div className="flex justify-end">
                 <Button
-                  onClick={handleAddNda}
+                  type="button"
                   className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
+                  onClick={handleDocumentUploadSubmit}
+                  disabled={isUploading}
                 >
-                  Add NDA
+                  {isUploading ? "Uploading..." : "Finish"}
                 </Button>
               </div>
             </DialogContent>
