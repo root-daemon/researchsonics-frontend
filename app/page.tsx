@@ -1,11 +1,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
@@ -21,7 +32,14 @@ const initialClients = [
       { id: 1, name: "General NDA", date: "2023-01-15" },
       { id: 2, name: "Project X NDA", date: "2023-03-22" },
     ],
-    lawsuits: [{ id: 1, name: "Patent Infringement Case", date: "2023-05-10", status: "Active" }],
+    lawsuits: [
+      {
+        id: 1,
+        name: "Patent Infringement Case",
+        date: "2023-05-10",
+        status: "Active",
+      },
+    ],
   },
   {
     id: 2,
@@ -39,31 +57,43 @@ const initialClients = [
       { id: 5, name: "IP Protection NDA", date: "2023-04-06" },
     ],
     lawsuits: [
-      { id: 2, name: "Contract Dispute", date: "2023-06-15", status: "Pending" },
-      { id: 3, name: "Employee Lawsuit", date: "2023-07-01", status: "Settled" },
+      {
+        id: 2,
+        name: "Contract Dispute",
+        date: "2023-06-15",
+        status: "Pending",
+      },
+      {
+        id: 3,
+        name: "Employee Lawsuit",
+        date: "2023-07-01",
+        status: "Settled",
+      },
     ],
   },
 ];
 
 const Navbar = () => (
-  <nav className="bg-white text-black p-4">
-    <div className="container mx-auto flex justify-between items-center">
-      <h1 className="text-xl font-bold">legaldash.ai</h1>
+  <nav className="bg-white p-4 text-black">
+    <div className="container mx-auto flex items-center justify-between">
+      <h1 className="text-xl font-bold underline underline-offset-1">
+        legaldash.ai
+      </h1>
       <div className="space-x-4"></div>
     </div>
   </nav>
 );
 
 export default function Home() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [clients, setClients] = useState(initialClients);
-  const [newClientName, setNewClientName] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="min-h-screen bg-gray-100">
       <Navbar />
       <div className="container mx-auto p-4">
-        <div className="mb-6 flex justify-between items-center">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-800">Client Dashboard</h2>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -71,15 +101,18 @@ export default function Home() {
                 <Plus className="mr-2 h-4 w-4" /> Add Client
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="border-2 border-[#f6c90e]">
               <CreateClient />
             </DialogContent>
           </Dialog>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {clients.map((client) => (
-            <Card key={client.id} className="w-full border-2 border-[#f6c90e] shadow-lg">
-              <CardHeader className="bg-white rounded-t-lg">
+            <Card
+              key={client.id}
+              className="w-full border-2 border-[#f6c90e] shadow-lg"
+            >
+              <CardHeader className="rounded-t-lg bg-white">
                 <div className="flex items-center space-x-4">
                   <Avatar className="border-2 border-[#f6c90e]">
                     <AvatarImage src={client.avatar} alt={client.name} />
@@ -88,27 +121,40 @@ export default function Home() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-gray-800">{client.name}</CardTitle>
+                    <CardTitle className="text-gray-800">
+                      {client.name}
+                    </CardTitle>
                     <CardDescription className="text-gray-600">
-                      {client.ndas.length} NDAs, {client.lawsuits.length} Lawsuits
+                      {client.ndas.length} NDAs, {client.lawsuits.length}{" "}
+                      Lawsuits
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="bg-white rounded-b-lg">
+              <CardContent className="rounded-b-lg bg-white">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="ndas">
-                    <AccordionTrigger className="text-gray-700 hover:text-[#f6c90e]">NDAs</AccordionTrigger>
+                    <AccordionTrigger className="text-gray-700 hover:text-[#f6c90e]">
+                      NDAs
+                    </AccordionTrigger>
                     <AccordionContent>
                       <ScrollArea className="h-[100px] w-full rounded-md border p-4">
                         {client.ndas.length > 0 ? (
                           client.ndas.map((nda) => (
-                            <div key={nda.id} className="flex justify-between items-center mb-2">
+                            <div
+                              key={nda.id}
+                              className="mb-2 flex items-center justify-between"
+                            >
                               <div className="flex items-center">
                                 <FileText className="mr-2 h-4 w-4 text-[#f6c90e]" />
-                                <span className="text-gray-700">{nda.name}</span>
+                                <span className="text-gray-700">
+                                  {nda.name}
+                                </span>
                               </div>
-                              <Badge variant="outline" className="bg-[#f6c90e] text-gray-800 border-[#f6c90e]">
+                              <Badge
+                                variant="outline"
+                                className="border-[#f6c90e] bg-[#f6c90e] text-gray-800"
+                              >
                                 {nda.date}
                               </Badge>
                             </div>
@@ -120,15 +166,22 @@ export default function Home() {
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="lawsuits">
-                    <AccordionTrigger className="text-gray-700 hover:text-[#f6c90e]">Lawsuits</AccordionTrigger>
+                    <AccordionTrigger className="text-gray-700 hover:text-[#f6c90e]">
+                      Lawsuits
+                    </AccordionTrigger>
                     <AccordionContent>
                       <ScrollArea className="h-[100px] w-full rounded-md border p-4">
                         {client.lawsuits.length > 0 ? (
                           client.lawsuits.map((lawsuit) => (
-                            <div key={lawsuit.id} className="flex justify-between items-center mb-2">
+                            <div
+                              key={lawsuit.id}
+                              className="mb-2 flex items-center justify-between"
+                            >
                               <div className="flex items-center">
                                 <AlertTriangle className="mr-2 h-4 w-4 text-[#f6c90e]" />
-                                <span className="text-gray-700">{lawsuit.name}</span>
+                                <span className="text-gray-700">
+                                  {lawsuit.name}
+                                </span>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <Badge
@@ -136,20 +189,23 @@ export default function Home() {
                                     lawsuit.status === "Active"
                                       ? "destructive"
                                       : lawsuit.status === "Pending"
-                                      ? "default"
-                                      : "secondary"
+                                        ? "default"
+                                        : "secondary"
                                   }
                                   className={
                                     lawsuit.status === "Active"
                                       ? "bg-red-500"
                                       : lawsuit.status === "Pending"
-                                      ? "bg-[#f6c90e] text-gray-800"
-                                      : "bg-green-500"
+                                        ? "bg-[#f6c90e] text-gray-800"
+                                        : "bg-green-500"
                                   }
                                 >
                                   {lawsuit.status}
                                 </Badge>
-                                <Badge variant="outline" className="text-gray-600">
+                                <Badge
+                                  variant="outline"
+                                  className="text-gray-600"
+                                >
                                   {lawsuit.date}
                                 </Badge>
                               </div>
@@ -163,10 +219,17 @@ export default function Home() {
                   </AccordionItem>
                 </Accordion>
                 <div className="mt-4 flex justify-end space-x-2">
-                  <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-100">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-100"
+                  >
                     View Details
                   </Button>
-                  <Button size="sm" className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]">
+                  <Button
+                    size="sm"
+                    className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
+                  >
                     Manage Client
                   </Button>
                 </div>

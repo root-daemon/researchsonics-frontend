@@ -35,13 +35,17 @@ export default function CreateClient() {
   };
 
   return (
-    <div className="container mx-auto p-4 bg-white">
+    <div className="container mx-auto p-4 bg-white ">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">Create New Client</h1>
-      <Card className="w-full max-w-2xl mx-auto border-2 border-[#f6c90e] shadow-lg">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Card className="w-full max-w-2xl mx-auto  shadow-lg">
+        <Tabs value={activeTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="name">Client Name</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="name" disabled={activeTab !== "name"}>
+              Client Name
+            </TabsTrigger>
+            <TabsTrigger value="documents" disabled={activeTab !== "documents"}>
+              Documents
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="name">
             <form onSubmit={handleNameSubmit}>
