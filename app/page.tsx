@@ -1,6 +1,6 @@
 "use client";
-
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -19,26 +19,27 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-
 import { FileText, AlertTriangle, Plus } from "lucide-react";
 import CreateClient from "./components/createClient";
 import clientsData from "@/lib/clients";
 
+// Navbar Component
 const Navbar = () => (
   <nav className="bg-white p-4 text-black">
     <div className="container mx-auto flex items-center justify-between">
       <h1 className="text-xl font-bold underline underline-offset-1">
         legaldash.ai
       </h1>
-      <div className="space-x-4"></div>
     </div>
   </nav>
 );
 
+// Home Component
 export default function Home() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [clients, setClients] = useState(clientsData);
+  const [clients, setClients] = useState(clientsData); // Set initial clients
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const router = useRouter(); // Ensure useRouter is client-side
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -174,10 +175,14 @@ export default function Home() {
                     variant="outline"
                     size="sm"
                     className="border-gray-300 text-gray-700 hover:bg-gray-100"
-
+                    onClick={() => {
+                      console.log(`Navigating to /client/${client.id}`);
+                      router.push(`/client/${client.id}`);
+                    }}
                   >
                     View Details
                   </Button>
+
                   <Button
                     size="sm"
                     className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
