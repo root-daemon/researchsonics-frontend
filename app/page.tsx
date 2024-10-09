@@ -22,56 +22,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 import { FileText, AlertTriangle, Plus } from "lucide-react";
 import CreateClient from "./components/createClient";
-
-const initialClients = [
-  {
-    id: 1,
-    name: "Acme Corp",
-    avatar: "/placeholder.svg?height=40&width=40",
-    ndas: [
-      { id: 1, name: "General NDA", date: "2023-01-15" },
-      { id: 2, name: "Project X NDA", date: "2023-03-22" },
-    ],
-    lawsuits: [
-      {
-        id: 1,
-        name: "Patent Infringement Case",
-        date: "2023-05-10",
-        status: "Active",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "TechStart Inc",
-    avatar: "/placeholder.svg?height=40&width=40",
-    ndas: [{ id: 3, name: "Confidentiality Agreement", date: "2023-02-01" }],
-    lawsuits: [],
-  },
-  {
-    id: 3,
-    name: "Global Solutions Ltd",
-    avatar: "/placeholder.svg?height=40&width=40",
-    ndas: [
-      { id: 4, name: "Non-Compete Agreement", date: "2023-04-05" },
-      { id: 5, name: "IP Protection NDA", date: "2023-04-06" },
-    ],
-    lawsuits: [
-      {
-        id: 2,
-        name: "Contract Dispute",
-        date: "2023-06-15",
-        status: "Pending",
-      },
-      {
-        id: 3,
-        name: "Employee Lawsuit",
-        date: "2023-07-01",
-        status: "Settled",
-      },
-    ],
-  },
-];
+import clientsData from "@/lib/clients";
 
 const Navbar = () => (
   <nav className="bg-white p-4 text-black">
@@ -86,7 +37,7 @@ const Navbar = () => (
 
 export default function Home() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [clients, setClients] = useState(initialClients);
+  const [clients, setClients] = useState(clientsData);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
@@ -134,7 +85,7 @@ export default function Home() {
               <CardContent className="rounded-b-lg bg-white">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="ndas">
-                    <AccordionTrigger className="text-gray-700 hover:text-[#f6c90e]">
+                    <AccordionTrigger className="text-gray-700">
                       NDAs
                     </AccordionTrigger>
                     <AccordionContent>
@@ -166,7 +117,7 @@ export default function Home() {
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="lawsuits">
-                    <AccordionTrigger className="text-gray-700 hover:text-[#f6c90e]">
+                    <AccordionTrigger className="text-gray-700">
                       Lawsuits
                     </AccordionTrigger>
                     <AccordionContent>
@@ -223,6 +174,7 @@ export default function Home() {
                     variant="outline"
                     size="sm"
                     className="border-gray-300 text-gray-700 hover:bg-gray-100"
+
                   >
                     View Details
                   </Button>
