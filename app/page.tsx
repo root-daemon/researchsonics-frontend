@@ -60,37 +60,37 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  const fetchClients = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:8000/client/", {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+      const data = await response.json();
+
+      const processedClients: Client[] = data.map((client: any) => ({
+        ...client,
+        ndas:
+          client.documents?.filter((doc: Document) =>
+            doc.path.includes("/nda"),
+          ) || [],
+        lawsuits:
+          client.documents?.filter((doc: Document) =>
+            doc.path.includes("/lawsuit"),
+          ) || [],
+      }));
+
+      setClients(processedClients);
+    } catch (error) {
+      console.error("Error fetching client data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchClients = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch("http://localhost:8000/client/", {
-          headers: {
-            Accept: "application/json",
-          },
-        });
-        const data = await response.json();
-
-        const processedClients: Client[] = data.map((client: any) => ({
-          ...client,
-          ndas:
-            client.documents?.filter((doc: Document) =>
-              doc.path.includes("/nda"),
-            ) || [],
-          lawsuits:
-            client.documents?.filter((doc: Document) =>
-              doc.path.includes("/lawsuit"),
-            ) || [],
-        }));
-
-        setClients(processedClients);
-      } catch (error) {
-        console.error("Error fetching client data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchClients();
   }, []);
 
@@ -104,7 +104,10 @@ export default function Home() {
       console.error("Error deleting client:", error);
     }
   };
-
+  const handleClientCreated = () => {
+    fetchClients();
+    setIsDialogOpen(false);
+  };
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
@@ -118,7 +121,7 @@ export default function Home() {
               </Button>
             </DialogTrigger>
             <DialogContent className="border-2 border-[#f6c90e]">
-              <CreateClient closeDialog={() => setIsDialogOpen(false)} />
+              <CreateClient closeDialog={handleClientCreated} />
             </DialogContent>
           </Dialog>
         </div>
