@@ -354,61 +354,34 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
               <DialogHeader>
                 <DialogTitle>Add New Lawsuit</DialogTitle>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="lawsuit-name" className="text-right">
-                    Name
-                  </Label>
-                  <Input
-                    id="lawsuit-name"
-                    value={newLawsuit.name}
-                    onChange={(e) =>
-                      setNewLawsuit({ ...newLawsuit, name: e.target.value })
-                    }
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="lawsuit-date" className="text-right">
-                    Date
-                  </Label>
-                  <Input
-                    id="lawsuit-date"
-                    type="date"
-                    value={newLawsuit.date}
-                    onChange={(e) =>
-                      setNewLawsuit({ ...newLawsuit, date: e.target.value })
-                    }
-                    className="col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="lawsuit-status" className="text-right">
-                    Status
-                  </Label>
-                  <Select
-                    value={newLawsuit.status}
-                    onValueChange={(value) =>
-                      setNewLawsuit({ ...newLawsuit, status: value })
-                    }
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Active">Active</SelectItem>
-                      <SelectItem value="Pending">Pending</SelectItem>
-                      <SelectItem value="Settled">Settled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <FileUploader onUpload={handleDocumentUploadLawSuit} />
+              <div className="space-y-2">
+                <Label>Uploaded Documents</Label>
+                {documents.length > 0 ? (
+                  <ul className="space-y-2">
+                    {documents.map((doc, index) => (
+                      <li key={index} className="flex items-center space-x-2">
+                        <FileText className="h-4 w-4 text-[#f6c90e]" />
+                        <span className="text-sm text-gray-600">
+                          {doc.name}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No documents uploaded yet.
+                  </p>
+                )}
               </div>
               <div className="flex justify-end">
                 <Button
-                  onClick={handleAddLawsuit}
+                  type="button"
                   className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
+                  onClick={handleDocumentUploadSubmitLawSuit}
+                  disabled={isUploading}
                 >
-                  Add Lawsuit
+                  {isUploading ? "Uploading..." : "Finish"}
                 </Button>
               </div>
             </DialogContent>
