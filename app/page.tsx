@@ -23,7 +23,6 @@ import { FileText, AlertTriangle, Plus } from "lucide-react";
 import CreateClient from "./components/createClient";
 import clientsData from "@/lib/clients";
 
-// Navbar Component
 const Navbar = () => (
   <nav className="bg-white p-4 text-black">
     <div className="container mx-auto flex items-center justify-between">
@@ -34,12 +33,11 @@ const Navbar = () => (
   </nav>
 );
 
-// Home Component
 export default function Home() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [clients, setClients] = useState(clientsData); // Set initial clients
+  const [clients, setClients] = useState(clientsData); 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const router = useRouter(); // Ensure useRouter is client-side
+  const router = useRouter(); 
 
   return (
     <div className="min-h-screen bg-gray-100">
