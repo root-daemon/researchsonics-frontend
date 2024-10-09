@@ -21,28 +21,70 @@ export default function CreateClient() {
   const [clientDescription, setClientDescription] = useState("");
   const [activeTab, setActiveTab] = useState("name");
   const [documents, setDocuments] = useState<File[]>([]);
-
-  const handleNameSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (clientName.trim() && clientDescription.trim()) {
-      setActiveTab("documents");
-    }
-  };
+  const [clientId, setClientID] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleDocumentUpload = (files: File[]) => {
     setDocuments((prevDocuments) => [...prevDocuments, ...files]);
   };
 
-  const handleCreateClient = () => {
-    console.log("Creating client:", {
-      name: clientName,
-      description: clientDescription,
-      documents,
-    });
-    setClientName("");
-    setClientDescription("");
-    setDocuments([]);
-    setActiveTab("name");
+  const handleNameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (clientName.trim() && clientDescription.trim()) {
+      try {
+        setIsSubmitting(true);
+
+        const clientData = {
+          name: clientName,
+          description: clientDescription,
+          documents: [],
+        };
+
+        const response = await fetch("http://localhost:8000/client/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+          body: JSON.stringify(clientData),
+        });
+
+        if (response.status === 200 || response.status === 201) {
+          const createdClient = await response.json();
+          console.log("Client created successfully:", createdClient);
+
+          if (documents.length > 0) {
+            const formData = new FormData();
+            documents.forEach((doc) => formData.append("documents", doc));
+
+            const documentResponse = await fetch(
+              `http://localhost:8000/client/${createdClient.id}/documents`,
+              {
+                method: "POST",
+                body: formData,
+              },
+            );
+
+            if (
+              documentResponse.status !== 200 &&
+              documentResponse.status !== 201
+            ) {
+              throw new Error("Failed to upload documents");
+            }
+
+            console.log("Documents uploaded successfully");
+          }
+
+          setActiveTab("documents");
+        } else {
+          throw new Error("Failed to create client");
+        }
+      } catch (error) {
+        console.error("Error creating client or uploading documents:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
   };
 
   return (
@@ -97,8 +139,10 @@ export default function CreateClient() {
                 <Button
                   type="submit"
                   className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
+                  disabled={isSubmitting}
                 >
-                  Next <ChevronRight className="ml-2 h-4 w-4" />
+                  {isSubmitting ? "Creating..." : "Next"}
+                  <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardFooter>
             </form>
@@ -139,13 +183,6 @@ export default function CreateClient() {
                 onClick={() => setActiveTab("name")}
               >
                 <ChevronLeft className="mr-2 h-4 w-4" /> Back
-              </Button>
-              <Button
-                type="button"
-                className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
-                onClick={handleCreateClient}
-              >
-                Create Client
               </Button>
             </CardFooter>
           </TabsContent>
