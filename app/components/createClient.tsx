@@ -21,7 +21,7 @@ export default function CreateClient() {
   const [clientDescription, setClientDescription] = useState("");
   const [activeTab, setActiveTab] = useState("name");
   const [documents, setDocuments] = useState<File[]>([]);
-  const [clientId, setClientID] = useState("");
+  const [clientId, setClientId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleDocumentUpload = (files: File[]) => {
@@ -49,38 +49,37 @@ export default function CreateClient() {
           body: JSON.stringify(clientData),
         });
 
-        if (response.status === 200 || response.status === 201) {
-          const createdClient = await response.json();
-          console.log("Client created successfully:", createdClient);
+        if (response.ok) {
+          const result = await response.json();
+          setClientId(result.client_id);
+          setActiveTab("documents");
 
           if (documents.length > 0) {
             const formData = new FormData();
-            documents.forEach((doc) => formData.append("documents", doc));
+            documents.forEach((doc) => formData.append("file", doc));
 
-            const documentResponse = await fetch(
-              `http://localhost:8000/client/${createdClient.id}/documents`,
+            const uploadResponse = await fetch(
+              `http://localhost:8000/client/${result.client_id}/nda/upload`,
               {
                 method: "POST",
+                headers: {
+                  accept: "application/json",
+                },
                 body: formData,
               },
             );
 
-            if (
-              documentResponse.status !== 200 &&
-              documentResponse.status !== 201
-            ) {
+            if (!uploadResponse.ok) {
               throw new Error("Failed to upload documents");
             }
 
             console.log("Documents uploaded successfully");
           }
-
-          setActiveTab("documents");
         } else {
           throw new Error("Failed to create client");
         }
       } catch (error) {
-        console.error("Error creating client or uploading documents:", error);
+        console.error("Error:", error);
       } finally {
         setIsSubmitting(false);
       }
