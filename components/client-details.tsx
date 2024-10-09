@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/router";
 import {
   Card,
   CardContent,
@@ -10,13 +11,6 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,7 +28,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileText, AlertTriangle, Plus, ArrowLeft } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Plus, ArrowLeft, Trash2 } from "lucide-react";
+
+// This would typically come from an API or database
 const getClientById = (id: number) => {
   const clients = [
     {
@@ -87,43 +91,89 @@ const getClientById = (id: number) => {
   ];
   return clients.find((client) => client.id === id);
 };
-export function ClientDetailsComponent({ id }: { id: number }) {
-  const [client, setClient] = useState(getClientById(id));
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+interface ClientDetailsProps {
+  id: number;
+}
+
+export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
+  const [client, setClient] = useState(
+    id ? getClientById(parseInt(id as unknown as string, 10)) : null,
+  );
+  const [isNdaDialogOpen, setIsNdaDialogOpen] = useState(false);
+  const [isLawsuitDialogOpen, setIsLawsuitDialogOpen] = useState(false);
+  const [newNda, setNewNda] = useState({ name: "", date: "" });
   const [newLawsuit, setNewLawsuit] = useState({
     name: "",
     date: "",
     status: "Pending",
   });
 
-  const handleAddLawsuit = () => {
-    if (newLawsuit.name && newLawsuit.date) {
+  const handleAddNda = () => {
+    if (newNda.name && newNda.date && client) {
       const updatedClient = {
-        ...client!,
+        ...client,
+        ndas: [
+          ...(client.ndas || []),
+          { ...newNda, id: (client.ndas?.length || 0) + 1 },
+        ],
+      };
+
+      setClient(updatedClient);
+      setNewNda({ name: "", date: "" });
+      setIsNdaDialogOpen(false);
+    }
+  };
+
+  const handleAddLawsuit = () => {
+    if (newLawsuit.name && newLawsuit.date && client) {
+      const updatedClient = {
+        ...client,
         lawsuits: [
-          ...client!.lawsuits,
-          { ...newLawsuit, id: client!.lawsuits.length + 1 },
+          ...(client.lawsuits || []),
+          { ...newLawsuit, id: (client.lawsuits?.length || 0) + 1 },
         ],
       };
       setClient(updatedClient);
       setNewLawsuit({ name: "", date: "", status: "Pending" });
-      setIsDialogOpen(false);
+      setIsLawsuitDialogOpen(false);
     }
   };
 
-  if (!client) return <div>Loading...</div>;
+  const handleDeleteNda = (ndaId: number) => {
+    if (client) {
+      const updatedClient = {
+        ...client,
+        ndas: client.ndas.filter((nda) => nda.id !== ndaId),
+      };
+      setClient(updatedClient);
+    }
+  };
 
+  const handleDeleteLawsuit = (lawsuitId: number) => {
+    if (client) {
+      const updatedClient = {
+        ...client,
+        lawsuits: client.lawsuits.filter((lawsuit) => lawsuit.id !== lawsuitId),
+      };
+      setClient(updatedClient);
+    }
+  };
+
+  if (!client) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto p-4">
         <Button
-          onClick={() => window.history.back()}
+          onClick={() => router.push("/")}
           variant="outline"
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
         </Button>
-        <Card className="w-full border-2 border-[#f6c90e] shadow-lg">
+        <Card className="mb-6 w-full border-2 border-[#f6c90e] shadow-lg">
           <CardHeader className="rounded-t-lg bg-white">
             <div className="flex items-center space-x-4">
               <Avatar className="h-20 w-20 border-2 border-[#f6c90e]">
@@ -142,87 +192,102 @@ export function ClientDetailsComponent({ id }: { id: number }) {
               </div>
             </div>
           </CardHeader>
+        </Card>
+
+        <Card className="mb-6 w-full border-2 border-[#f6c90e] shadow-lg">
+          <CardHeader className="rounded-t-lg bg-white">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-2xl text-gray-800">NDAs</CardTitle>
+              <Dialog open={isNdaDialogOpen} onOpenChange={setIsNdaDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]">
+                    <Plus className="mr-2 h-4 w-4" /> Add NDA
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Add New NDA</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="nda-name" className="text-right">
+                        Name
+                      </Label>
+                      <Input
+                        id="nda-name"
+                        value={newNda.name}
+                        onChange={(e) =>
+                          setNewNda({ ...newNda, name: e.target.value })
+                        }
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="nda-date" className="text-right">
+                        Date
+                      </Label>
+                      <Input
+                        id="nda-date"
+                        type="date"
+                        value={newNda.date}
+                        onChange={(e) =>
+                          setNewNda({ ...newNda, date: e.target.value })
+                        }
+                        className="col-span-3"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleAddNda}
+                      className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
+                    >
+                      Add NDA
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
           <CardContent className="rounded-b-lg bg-white">
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="ndas">
-                <AccordionTrigger className="text-xl text-gray-700 hover:text-[#f6c90e]">
-                  NDAs
-                </AccordionTrigger>
-                <AccordionContent>
-                  <ScrollArea className="h-[200px] w-full rounded-md border p-4">
-                    {client.ndas.map((nda) => (
-                      <div
-                        key={nda.id}
-                        className="mb-4 flex items-center justify-between"
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {client.ndas.map((nda) => (
+                  <TableRow key={nda.id}>
+                    <TableCell className="font-medium">{nda.name}</TableCell>
+                    <TableCell>{nda.date}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteNda(nda.id)}
+                        className="text-red-500 hover:text-red-700"
                       >
-                        <div className="flex items-center">
-                          <FileText className="mr-2 h-6 w-6 text-[#f6c90e]" />
-                          <span className="text-lg text-gray-700">
-                            {nda.name}
-                          </span>
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className="border-[#f6c90e] bg-[#f6c90e] text-lg text-gray-800"
-                        >
-                          {nda.date}
-                        </Badge>
-                      </div>
-                    ))}
-                  </ScrollArea>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="lawsuits">
-                <AccordionTrigger className="text-xl text-gray-700 hover:text-[#f6c90e]">
-                  Lawsuits
-                </AccordionTrigger>
-                <AccordionContent>
-                  <ScrollArea className="h-[200px] w-full rounded-md border p-4">
-                    {client.lawsuits.map((lawsuit) => (
-                      <div
-                        key={lawsuit.id}
-                        className="mb-4 flex items-center justify-between"
-                      >
-                        <div className="flex items-center">
-                          <AlertTriangle className="mr-2 h-6 w-6 text-[#f6c90e]" />
-                          <span className="text-lg text-gray-700">
-                            {lawsuit.name}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge
-                            variant={
-                              lawsuit.status === "Active"
-                                ? "destructive"
-                                : lawsuit.status === "Pending"
-                                  ? "default"
-                                  : "secondary"
-                            }
-                            className={`text-lg ${
-                              lawsuit.status === "Active"
-                                ? "bg-red-500"
-                                : lawsuit.status === "Pending"
-                                  ? "bg-[#f6c90e] text-gray-800"
-                                  : "bg-green-500"
-                            }`}
-                          >
-                            {lawsuit.status}
-                          </Badge>
-                          <Badge
-                            variant="outline"
-                            className="text-lg text-gray-600"
-                          >
-                            {lawsuit.date}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </ScrollArea>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-            <div className="mt-6 flex justify-end">
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <Card className="w-full border-2 border-[#f6c90e] shadow-lg">
+          <CardHeader className="rounded-t-lg bg-white">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-2xl text-gray-800">Lawsuits</CardTitle>
+              <Dialog
+                open={isLawsuitDialogOpen}
+                onOpenChange={setIsLawsuitDialogOpen}
+              >
                 <DialogTrigger asChild>
                   <Button className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]">
                     <Plus className="mr-2 h-4 w-4" /> Add Lawsuit
@@ -234,11 +299,11 @@ export function ClientDetailsComponent({ id }: { id: number }) {
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="name" className="text-right">
+                      <Label htmlFor="lawsuit-name" className="text-right">
                         Name
                       </Label>
                       <Input
-                        id="name"
+                        id="lawsuit-name"
                         value={newLawsuit.name}
                         onChange={(e) =>
                           setNewLawsuit({ ...newLawsuit, name: e.target.value })
@@ -247,11 +312,11 @@ export function ClientDetailsComponent({ id }: { id: number }) {
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="date" className="text-right">
+                      <Label htmlFor="lawsuit-date" className="text-right">
                         Date
                       </Label>
                       <Input
-                        id="date"
+                        id="lawsuit-date"
                         type="date"
                         value={newLawsuit.date}
                         onChange={(e) =>
@@ -261,7 +326,7 @@ export function ClientDetailsComponent({ id }: { id: number }) {
                       />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="status" className="text-right">
+                      <Label htmlFor="lawsuit-status" className="text-right">
                         Status
                       </Label>
                       <Select
@@ -292,9 +357,61 @@ export function ClientDetailsComponent({ id }: { id: number }) {
                 </DialogContent>
               </Dialog>
             </div>
+          </CardHeader>
+          <CardContent className="rounded-b-lg bg-white">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {client.lawsuits.map((lawsuit) => (
+                  <TableRow key={lawsuit.id}>
+                    <TableCell className="font-medium">
+                      {lawsuit.name}
+                    </TableCell>
+                    <TableCell>{lawsuit.date}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          lawsuit.status === "Active"
+                            ? "destructive"
+                            : lawsuit.status === "Pending"
+                              ? "default"
+                              : "secondary"
+                        }
+                        className={
+                          lawsuit.status === "Active"
+                            ? "bg-red-500"
+                            : lawsuit.status === "Pending"
+                              ? "bg-[#f6c90e] text-gray-800"
+                              : "bg-green-500"
+                        }
+                      >
+                        {lawsuit.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteLawsuit(lawsuit.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>
     </div>
   );
-}
+};

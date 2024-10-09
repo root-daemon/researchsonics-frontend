@@ -1,9 +1,9 @@
-import { ClientDetailsComponent } from "@/components/client-details";
+import { ClientDetails } from "@/components/client-details";
 
 export default function ClientDetailsPage({
   params,
 }: {
   params: { id: string };
 }) {
-  return <ClientDetailsComponent id={parseInt(params.id, 10)} />;
+  return <ClientDetails id={parseInt(params.id, 10)} />;
 }
