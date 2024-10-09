@@ -1,154 +1,145 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, ChevronUp, ChevronDown } from "lucide-react";
-import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useParams } from "next/navigation";
 
-interface SubSection {
-  title: string;
+interface AnalysisItem {
+  type: string;
   content: string;
 }
 
-interface LawsuitDetails {
-  summary: SubSection[];
-  context: SubSection[];
-  vulnerabilities: SubSection[];
+interface AnalysisData {
+  [key: string]: AnalysisItem[];
 }
 
-const LawsuitDetailsPage = () => {
-  const [lawsuitDetails, setLawsuitDetails] = useState<LawsuitDetails | null>(
-    null,
-  );
+export default function Component() {
+  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [expandedSections, setExpandedSections] = useState({
-    summary: true,
-    context: true,
-    vulnerabilities: true,
-  });
-
+  const [error, setError] = useState<string | null>(null);
+  const { clientId, lawsuitId } = useParams();
   useEffect(() => {
-    const fetchLawsuitDetails = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setLawsuitDetails({
-        summary: [
+    const fetchAnalysisData = async () => {
+      try {
+        const response = await fetch(
+          "http://0.0.0.0:8000/chat/analyze-documents-minio",
           {
-            title: "Case Overview",
-            content:
-              "This lawsuit involves a contract dispute between Global Solutions Ltd and TechCorp regarding a software development project.",
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              sue_letter_path: `${clientId}/nda/nda-pdf`,
+              nda_path: `${clientId}/lawsuit/sue-letter-s1-pdf`,
+            }),
           },
-          {
-            title: "Key Issues",
-            content:
-              "The main points of contention are project delays, quality of deliverables, and payment schedules.",
-          },
-        ],
-        context: [
-          {
-            title: "Background",
-            content:
-              "The contract was signed in January 2023 for a 6-month project to develop a custom CRM system.",
-          },
-          {
-            title: "Dispute Timeline",
-            content:
-              "Disagreements arose in April 2023 when the first major milestone was missed.",
-          },
-        ],
-        vulnerabilities: [
-          {
-            title: "Contract Ambiguities",
-            content:
-              "The contract lacks clear definitions of 'acceptable quality' for deliverables.",
-          },
-          {
-            title: "Communication Gaps",
-            content:
-              "There's evidence of miscommunication between project managers from both parties.",
-          },
-        ],
-      });
-      setLoading(false);
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const filteredData: AnalysisData = Object.fromEntries(
+          Object.entries(data).filter(
+            ([_, items]) => !items.some((item) => item[0] === "Error"),
+          ),
+        );
+        setAnalysisData(filteredData);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "An unknown error occurred");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchLawsuitDetails();
+    fetchAnalysisData();
   }, []);
 
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
-  };
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4 md:p-6 lg:p-8">
+        <h1 className="mb-6 text-center text-2xl font-bold">
+          NDA Analysis Results
+        </h1>
+        <div className="grid gap-6">
+          {[1, 2].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-1/4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="mb-2 h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4 md:p-6 lg:p-8">
+        <h1 className="mb-6 text-center text-2xl font-bold">Error</h1>
+        <p className="text-center text-red-500">{error}</p>
+      </div>
+    );
+  }
+
+  if (!analysisData || Object.keys(analysisData).length === 0) {
+    return (
+      <div className="container mx-auto p-4 md:p-6 lg:p-8">
+        <h1 className="mb-6 text-center text-2xl font-bold">
+          No Data Available
+        </h1>
+        <p className="text-center">
+          No non-error sections found in the analysis.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="mx-auto max-w-4xl rounded-lg bg-white p-6 shadow-md">
-        <Link
-          href="/"
-          className="mb-6 inline-flex items-center text-gray-600 hover:text-gray-800"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
-        </Link>
-
-        <div className="mb-8 flex items-center">
-          <div className="mr-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-400 text-2xl font-bold text-white">
-            GL
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">Contract Dispute</h1>
-            <p className="text-gray-600">Global Solutions Ltd</p>
-          </div>
-        </div>
-
-        {["summary", "context", "vulnerabilities"].map((section, index) => (
-          <div
-            key={section}
-            className={`mb-6 ${index !== 0 ? "border-t border-gray-200 pt-6" : ""}`}
-          >
-            <button
-              onClick={() =>
-                toggleSection(section as keyof typeof expandedSections)
-              }
-              className="mb-4 flex w-full items-center justify-between"
-            >
-              <h2 className="text-xl font-semibold capitalize">{section}</h2>
-              {expandedSections[section as keyof typeof expandedSections] ? (
-                <ChevronUp className="h-5 w-5 text-gray-500" />
-              ) : (
-                <ChevronDown className="h-5 w-5 text-gray-500" />
-              )}
-            </button>
-            {expandedSections[section as keyof typeof expandedSections] && (
-              <div className="space-y-4">
-                {loading ? (
-                  <>
-                    {[1, 2].map((item) => (
-                      <div key={item} className="animate-pulse">
-                        <div className="mb-2 h-4 w-1/4 rounded bg-gray-200"></div>
-                        <div className="mb-1 h-4 w-3/4 rounded bg-gray-200"></div>
-                        <div className="h-4 w-1/2 rounded bg-gray-200"></div>
-                      </div>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    {lawsuitDetails?.[section as keyof LawsuitDetails].map(
-                      (subSection, index) => (
-                        <div key={index}>
-                          <h3 className="mb-2 text-lg font-semibold">
-                            {subSection.title}
-                          </h3>
-                          <p className="text-gray-700">{subSection.content}</p>
-                        </div>
-                      ),
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+    <div className="container mx-auto p-4 md:p-6 lg:p-8">
+      <h1 className="mb-6 text-center text-2xl font-bold">
+        NDA Analysis Results
+      </h1>
+      <div className="grid gap-6">
+        {Object.entries(analysisData).map(([section, items]) => (
+          <Card key={section}>
+            <CardHeader>
+              <CardTitle>Section {section}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible>
+                {items.map((item, index) => (
+                  <AccordionItem key={index} value={`${section}-${index}`}>
+                    <AccordionTrigger>{item[0]}</AccordionTrigger>
+                    <AccordionContent>
+                      {item[1] ? (
+                        <p className="text-sm text-gray-700">{item[1]}</p>
+                      ) : (
+                        <p className="text-sm italic text-gray-500">
+                          No content available
+                        </p>
+                      )}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
   );
-};
-
-export default LawsuitDetailsPage;
+}

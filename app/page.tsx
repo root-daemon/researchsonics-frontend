@@ -182,20 +182,12 @@ export default function Home() {
                 </Accordion>
                 <div className="mt-4 flex justify-end space-x-2">
                   <Button
-                    variant="outline"
                     size="sm"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-100"
+                    className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
                     onClick={() => {
                       console.log(`Navigating to /client/${client._id}`);
                       router.push(`/client/${client._id}`);
                     }}
-                  >
-                    View Details
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
                   >
                     Manage Client
                   </Button>

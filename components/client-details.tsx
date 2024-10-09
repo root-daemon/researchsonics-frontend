@@ -453,7 +453,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
       <div className="flex items-center justify-center">
         <Button
           type="button"
-          className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
+          className="mt-20 bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
         >
           Get Points
         </Button>
