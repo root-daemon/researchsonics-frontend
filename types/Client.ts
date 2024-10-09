@@ -4,6 +4,7 @@ export interface Document {
 }
 
 export interface Nda extends Document {
+  slug: string;
   id: number;
   date: string;
 }

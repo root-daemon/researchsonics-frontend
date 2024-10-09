@@ -104,10 +104,51 @@ export default function Home() {
       console.error("Error deleting client:", error);
     }
   };
+
   const handleClientCreated = () => {
     fetchClients();
     setIsDialogOpen(false);
   };
+
+  // **Download function for NDAs**
+  const downloadNda = async (clientId: string, ndaSlug: string) => {
+    const url = `http://localhost:8000/client/${clientId}/nda/${ndaSlug}`;
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          // Include any necessary headers, such as authentication tokens
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error downloading file: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = ndaSlug; // Default filename
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?(.+)"?/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+
+      // Create a link to download the file
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading NDA:", error);
+      alert("Failed to download NDA. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
@@ -190,12 +231,17 @@ export default function Home() {
                                           {nda.name}
                                         </span>
                                       </div>
-                                      <Badge
+                                      {/* Replace Badge with Button for download */}
+                                      <Button
                                         variant="outline"
-                                        className="border-[#f6c90e] bg-[#f6c90e] text-gray-800"
+                                        size="sm"
+                                        className="border-[#f6c90e] bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
+                                        onClick={() =>
+                                          downloadNda(client._id, nda.slug)
+                                        }
                                       >
                                         View
-                                      </Badge>
+                                      </Button>
                                     </div>
                                   ))
                                 ) : (
@@ -206,6 +252,7 @@ export default function Home() {
                               </ScrollArea>
                             </AccordionContent>
                           </AccordionItem>
+                          {/* ... Existing code for lawsuits ... */}
                           <AccordionItem value="lawsuits">
                             <AccordionTrigger className="text-gray-700">
                               Lawsuits
