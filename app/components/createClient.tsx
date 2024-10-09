@@ -35,10 +35,10 @@ export default function CreateClient({
 
   const handleNameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (clientName.trim() && clientDescription.trim()) {
-      try {
-        setIsSubmitting(true);
 
+    if (clientName.trim() && clientDescription.trim()) {
+      setIsSubmitting(true);
+      try {
         const clientData = {
           name: clientName,
           description: clientDescription,
@@ -54,15 +54,13 @@ export default function CreateClient({
           body: JSON.stringify(clientData),
         });
 
-        if (response.ok) {
-          const result = await response.json();
-          setClientId(result.client_id);
-          setActiveTab("documents");
-        } else {
-          throw new Error("Failed to create client");
-        }
+        if (!response.ok) throw new Error("Failed to create client");
+
+        const result = await response.json();
+        setClientId(result.client_id);
+        setActiveTab("documents");
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error creating client:", error);
       } finally {
         setIsSubmitting(false);
       }
@@ -75,8 +73,9 @@ export default function CreateClient({
       return;
     }
 
+    setIsUploading(true);
+
     try {
-      setIsUploading(true);
       const formData = new FormData();
       documents.forEach((doc) => formData.append("file", doc));
 
@@ -91,9 +90,7 @@ export default function CreateClient({
         },
       );
 
-      if (!uploadResponse.ok) {
-        throw new Error("Failed to upload documents");
-      }
+      if (!uploadResponse.ok) throw new Error("Failed to upload documents");
 
       console.log("Documents uploaded successfully");
       closeDialog();
@@ -105,11 +102,11 @@ export default function CreateClient({
   };
 
   return (
-    <div className="container mx-auto bg-white p-4">
+    <div className="container mx-auto max-w-full bg-white p-4 sm:max-w-2xl">
       <h1 className="mb-6 text-3xl font-bold text-gray-800">
         Create New Client
       </h1>
-      <Card className="mx-auto w-full max-w-2xl shadow-lg">
+      <Card className="mx-auto max-h-[90vh] w-full max-w-full overflow-auto shadow-lg sm:max-w-xl">
         <Tabs value={activeTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="name" disabled={activeTab !== "name"}>
@@ -119,6 +116,7 @@ export default function CreateClient({
               Documents
             </TabsTrigger>
           </TabsList>
+
           <TabsContent value="name">
             <form onSubmit={handleNameSubmit}>
               <CardHeader>
@@ -150,7 +148,12 @@ export default function CreateClient({
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button type="button" variant="outline" onClick={closeDialog}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeDialog}
+                  disabled={isSubmitting}
+                >
                   Cancel
                 </Button>
                 <Button
@@ -164,6 +167,7 @@ export default function CreateClient({
               </CardFooter>
             </form>
           </TabsContent>
+
           <TabsContent value="documents">
             <CardHeader>
               <CardTitle>Upload Documents</CardTitle>
@@ -171,12 +175,12 @@ export default function CreateClient({
                 Upload any relevant documents for the client.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="max-h-72 space-y-4 overflow-auto">
               <FileUploader onUpload={handleDocumentUpload} />
               <div className="space-y-2">
                 <Label>Uploaded Documents</Label>
                 {documents.length > 0 ? (
-                  <ul className="space-y-2">
+                  <ul className="max-h-40 space-y-2 overflow-auto">
                     {documents.map((doc, index) => (
                       <li key={index} className="flex items-center space-x-2">
                         <FileText className="h-4 w-4 text-[#f6c90e]" />
@@ -197,7 +201,10 @@ export default function CreateClient({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setActiveTab("name")}
+                onClick={() => {
+                  if (!isUploading) setActiveTab("name");
+                }}
+                disabled={isUploading}
               >
                 <ChevronLeft className="mr-2 h-4 w-4" /> Back
               </Button>
