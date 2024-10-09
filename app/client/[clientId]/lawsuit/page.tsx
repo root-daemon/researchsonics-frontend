@@ -25,6 +25,7 @@ export default function Component() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { clientId, lawsuitId } = useParams();
+
   useEffect(() => {
     const fetchAnalysisData = async () => {
       try {
@@ -46,10 +47,12 @@ export default function Component() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as AnalysisData;
+
         const filteredData: AnalysisData = Object.fromEntries(
           Object.entries(data).filter(
-            ([_, items]) => !items.some((item) => item[0] === "Error"),
+            ([_, items]: [string, AnalysisItem[]]) =>
+              !items.some((item: AnalysisItem) => item.type === "Error"),
           ),
         );
         setAnalysisData(filteredData);
@@ -123,10 +126,10 @@ export default function Component() {
               <Accordion type="single" collapsible>
                 {items.map((item, index) => (
                   <AccordionItem key={index} value={`${section}-${index}`}>
-                    <AccordionTrigger>{item[0]}</AccordionTrigger>
+                    <AccordionTrigger>{item.type}</AccordionTrigger>
                     <AccordionContent>
-                      {item[1] ? (
-                        <p className="text-sm text-gray-700">{item[1]}</p>
+                      {item.content ? (
+                        <p className="text-sm text-gray-700">{item.content}</p>
                       ) : (
                         <p className="text-sm italic text-gray-500">
                           No content available
