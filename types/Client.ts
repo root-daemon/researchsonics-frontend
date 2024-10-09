@@ -10,6 +10,7 @@ export interface Nda extends Document {
 }
 
 export interface Lawsuit extends Document {
+  [x: string]: any;
   id: number;
   date: string;
   status: string;

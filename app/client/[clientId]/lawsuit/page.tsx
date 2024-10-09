@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useParams } from "next/navigation";
+import { getClientById } from "@/lib/getClient";
 
 interface AnalysisItem {
   type: string;
@@ -24,11 +25,33 @@ export default function Component() {
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { clientId, lawsuitId } = useParams();
+  const { clientId, lawsuitId } = useParams() as {
+    clientId: string;
+    lawsuitId: string;
+  };
 
   useEffect(() => {
     const fetchAnalysisData = async () => {
       try {
+        const clientData = await getClientById(clientId);
+
+        if (!clientData) {
+          throw new Error("Failed to fetch client data");
+        }
+
+        const firstNDA = clientData.ndas[0];
+        const firstLawsuit = clientData.lawsuits[0];
+
+        if (!firstNDA || !firstLawsuit) {
+          throw new Error("No NDA or lawsuit found for the client");
+        }
+
+        const ndaSlug = firstNDA.slug;
+        const lawsuitSlug = firstLawsuit.slug;
+
+        const ndaPath = `${clientId}/nda/${ndaSlug}`;
+        const lawsuitPath = `${clientId}/lawsuit/${lawsuitSlug}`;
+
         const response = await fetch(
           "http://0.0.0.0:8000/chat/analyze-documents-minio",
           {
@@ -37,8 +60,8 @@ export default function Component() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              sue_letter_path: `${clientId}/nda/nda-pdf`,
-              nda_path: `${clientId}/lawsuit/sue-letter-s1-pdf`,
+              nda_path: ndaPath,
+              sue_letter_path: lawsuitPath,
             }),
           },
         );
@@ -47,14 +70,23 @@ export default function Component() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = (await response.json()) as AnalysisData;
+        const data = (await response.json()) as any;
+
+        // Transform the data into the expected format
+        const transformedData: AnalysisData = {};
+
+        for (const [section, items] of Object.entries(data)) {
+          transformedData[section] = (items as any[]).map(
+            ([type, content]: [string, string]) => ({ type, content }),
+          );
+        }
 
         const filteredData: AnalysisData = Object.fromEntries(
-          Object.entries(data).filter(
-            ([_, items]: [string, AnalysisItem[]]) =>
-              !items.some((item: AnalysisItem) => item.type === "Error"),
+          Object.entries(transformedData).filter(
+            ([_, items]) => !items.some((item) => item.type === "Error"),
           ),
         );
+
         setAnalysisData(filteredData);
       } catch (e) {
         setError(e instanceof Error ? e.message : "An unknown error occurred");
