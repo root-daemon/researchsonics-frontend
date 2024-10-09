@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { Client, Lawsuit, Nda } from "@/types/Client";
@@ -15,15 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -78,15 +70,10 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
   const [client, setClient] = useState<Client | null>(null);
   const [isNdaDialogOpen, setIsNdaDialogOpen] = useState(false);
   const [isLawsuitDialogOpen, setIsLawsuitDialogOpen] = useState(false);
-  const [documents, setDocuments] = useState<File[]>([]);
-  const [newNda, setNewNda] = useState({ name: "", date: "" });
+  const [ndaDocuments, setNdaDocuments] = useState<File[]>([]);
+  const [lawsuitDocuments, setLawsuitDocuments] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  const [newLawsuit, setNewLawsuit] = useState({
-    name: "",
-    date: "",
-    status: "Pending",
-  });
   const router = useRouter();
 
   useEffect(() => {
@@ -98,11 +85,17 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
       });
     }
   }, [id]);
-  const handleDocumentUpload = (files: File[]) => {
-    setDocuments((prevDocuments) => [...prevDocuments, ...files]);
+
+  const handleNdaDocumentUpload = (files: File[]) => {
+    setNdaDocuments((prevDocuments) => [...prevDocuments, ...files]);
   };
-  const handleDocumentUploadSubmit = async () => {
-    if (documents.length === 0) {
+
+  const handleLawsuitDocumentUpload = (files: File[]) => {
+    setLawsuitDocuments((prevDocuments) => [...prevDocuments, ...files]);
+  };
+
+  const handleNdaUploadSubmit = async () => {
+    if (ndaDocuments.length === 0) {
       setIsNdaDialogOpen(false);
       return;
     }
@@ -110,7 +103,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
     try {
       setIsUploading(true);
       const formData = new FormData();
-      documents.forEach((doc) => formData.append("file", doc));
+      ndaDocuments.forEach((doc) => formData.append("file", doc));
 
       const uploadResponse = await fetch(
         `http://localhost:8000/client/${id}/nda/upload`,
@@ -129,25 +122,29 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
 
       console.log("Documents uploaded successfully");
       setIsNdaDialogOpen(false);
+      setNdaDocuments([]);
+      getClientById(id).then((clientData) => {
+        if (clientData) {
+          setClient(clientData);
+        }
+      });
     } catch (error) {
       console.error("Error uploading documents:", error);
     } finally {
       setIsUploading(false);
     }
   };
-  const handleDocumentUploadLawSuit = (files: File[]) => {
-    setDocuments((prevDocuments) => [...prevDocuments, ...files]);
-  };
-  const handleDocumentUploadSubmitLawSuit = async () => {
-    if (documents.length === 0) {
-      setIsNdaDialogOpen(false);
+
+  const handleLawsuitUploadSubmit = async () => {
+    if (lawsuitDocuments.length === 0) {
+      setIsLawsuitDialogOpen(false);
       return;
     }
 
     try {
       setIsUploading(true);
       const formData = new FormData();
-      documents.forEach((doc) => formData.append("file", doc));
+      lawsuitDocuments.forEach((doc) => formData.append("file", doc));
 
       const uploadResponse = await fetch(
         `http://localhost:8000/client/${id}/lawsuit/upload`,
@@ -165,7 +162,13 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
       }
 
       console.log("Documents uploaded successfully");
-      setIsNdaDialogOpen(false);
+      setIsLawsuitDialogOpen(false);
+      setLawsuitDocuments([]);
+      getClientById(id).then((clientData) => {
+        if (clientData) {
+          setClient(clientData);
+        }
+      });
     } catch (error) {
       console.error("Error uploading documents:", error);
     } finally {
@@ -173,61 +176,58 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
     }
   };
 
-  const handleAddNda = () => {
-    if (newNda.name && newNda.date && client) {
-      const updatedClient = {
-        ...client,
-        ndas: [
-          ...(client.ndas || []),
-          { ...newNda, id: (client.ndas?.length || 0) + 1, path: "" }, // Ensure path is added
-        ],
-      };
-
-      setClient(updatedClient);
-      setNewNda({ name: "", date: "" });
-      setIsNdaDialogOpen(false);
-    }
-  };
-
-  // Handle adding new lawsuit
-  const handleAddLawsuit = () => {
-    if (newLawsuit.name && newLawsuit.date && client) {
-      const updatedClient = {
-        ...client,
-        lawsuits: [
-          ...(client.lawsuits || []),
-          {
-            ...newLawsuit,
-            id: (client.lawsuits?.length || 0) + 1,
-            path: "", // Ensure path is added
+  const handleDeleteNda = async (ndaId: number) => {
+    try {
+      const deleteResponse = await fetch(
+        `http://localhost:8000/client/${id}/nda/${ndaId}`,
+        {
+          method: "DELETE",
+          headers: {
+            accept: "application/json",
           },
-        ],
-      };
-      setClient(updatedClient);
-      setNewLawsuit({ name: "", date: "", status: "Pending" });
-      setIsLawsuitDialogOpen(false);
+        },
+      );
+
+      if (!deleteResponse.ok) {
+        throw new Error("Failed to delete NDA");
+      }
+
+      console.log("NDA deleted successfully");
+      getClientById(id).then((clientData) => {
+        if (clientData) {
+          setClient(clientData);
+        }
+      });
+    } catch (error) {
+      console.error("Error deleting NDA:", error);
     }
   };
 
-  // Handle deleting an NDA
-  const handleDeleteNda = (ndaId: number) => {
-    if (client) {
-      const updatedClient = {
-        ...client,
-        ndas: client.ndas.filter((nda) => nda.id !== ndaId),
-      };
-      setClient(updatedClient);
-    }
-  };
+  const handleDeleteLawsuit = async (lawsuitId: number) => {
+    try {
+      const deleteResponse = await fetch(
+        `http://localhost:8000/client/${id}/lawsuit/${lawsuitId}`,
+        {
+          method: "DELETE",
+          headers: {
+            accept: "application/json",
+          },
+        },
+      );
 
-  // Handle deleting a lawsuit
-  const handleDeleteLawsuit = (lawsuitId: number) => {
-    if (client) {
-      const updatedClient = {
-        ...client,
-        lawsuits: client.lawsuits.filter((lawsuit) => lawsuit.id !== lawsuitId),
-      };
-      setClient(updatedClient);
+      if (!deleteResponse.ok) {
+        throw new Error("Failed to delete lawsuit");
+      }
+
+      console.log("Lawsuit deleted successfully");
+      // Refresh client data
+      getClientById(id).then((clientData) => {
+        if (clientData) {
+          setClient(clientData);
+        }
+      });
+    } catch (error) {
+      console.error("Error deleting lawsuit:", error);
     }
   };
 
@@ -264,7 +264,13 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
       <section className="mb-12">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-3xl font-semibold text-gray-800">NDAs</h2>
-          <Dialog open={isNdaDialogOpen} onOpenChange={setIsNdaDialogOpen}>
+          <Dialog
+            open={isNdaDialogOpen}
+            onOpenChange={(open) => {
+              setIsNdaDialogOpen(open);
+              if (!open) setNdaDocuments([]);
+            }}
+          >
             <DialogTrigger asChild>
               <Button className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]">
                 <Plus className="mr-2 h-4 w-4" /> Add NDA
@@ -274,12 +280,12 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
               <DialogHeader>
                 <DialogTitle>Add New NDA</DialogTitle>
               </DialogHeader>
-              <FileUploader onUpload={handleDocumentUpload} />
+              <FileUploader onUpload={handleNdaDocumentUpload} />
               <div className="space-y-2">
                 <Label>Uploaded Documents</Label>
-                {documents.length > 0 ? (
+                {ndaDocuments.length > 0 ? (
                   <ul className="space-y-2">
-                    {documents.map((doc, index) => (
+                    {ndaDocuments.map((doc, index) => (
                       <li key={index} className="flex items-center space-x-2">
                         <FileText className="h-4 w-4 text-[#f6c90e]" />
                         <span className="text-sm text-gray-600">
@@ -298,7 +304,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
                 <Button
                   type="button"
                   className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
-                  onClick={handleDocumentUploadSubmit}
+                  onClick={handleNdaUploadSubmit}
                   disabled={isUploading}
                 >
                   {isUploading ? "Uploading..." : "Finish"}
@@ -319,8 +325,10 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
           <TableBody>
             {client.ndas.map((nda: Nda) => (
               <TableRow key={nda.id}>
-                <TableCell className="font-medium">{nda.name}</TableCell>
-                <TableCell>{nda.date}</TableCell>
+                <TableCell className="font-medium">
+                  {nda.name || "N/A"}
+                </TableCell>
+                <TableCell>{nda.date || "N/A"}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="ghost"
@@ -343,7 +351,10 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
           <h2 className="text-3xl font-semibold text-gray-800">Lawsuits</h2>
           <Dialog
             open={isLawsuitDialogOpen}
-            onOpenChange={setIsLawsuitDialogOpen}
+            onOpenChange={(open) => {
+              setIsLawsuitDialogOpen(open);
+              if (!open) setLawsuitDocuments([]);
+            }}
           >
             <DialogTrigger asChild>
               <Button className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]">
@@ -354,12 +365,12 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
               <DialogHeader>
                 <DialogTitle>Add New Lawsuit</DialogTitle>
               </DialogHeader>
-              <FileUploader onUpload={handleDocumentUploadLawSuit} />
+              <FileUploader onUpload={handleLawsuitDocumentUpload} />
               <div className="space-y-2">
                 <Label>Uploaded Documents</Label>
-                {documents.length > 0 ? (
+                {lawsuitDocuments.length > 0 ? (
                   <ul className="space-y-2">
-                    {documents.map((doc, index) => (
+                    {lawsuitDocuments.map((doc, index) => (
                       <li key={index} className="flex items-center space-x-2">
                         <FileText className="h-4 w-4 text-[#f6c90e]" />
                         <span className="text-sm text-gray-600">
@@ -378,7 +389,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
                 <Button
                   type="button"
                   className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
-                  onClick={handleDocumentUploadSubmitLawSuit}
+                  onClick={handleLawsuitUploadSubmit}
                   disabled={isUploading}
                 >
                   {isUploading ? "Uploading..." : "Finish"}
@@ -400,8 +411,10 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
           <TableBody>
             {client.lawsuits.map((lawsuit: Lawsuit) => (
               <TableRow key={lawsuit.id}>
-                <TableCell className="font-medium">{lawsuit.name}</TableCell>
-                <TableCell>{lawsuit.date}</TableCell>
+                <TableCell className="font-medium">
+                  {lawsuit.name || "N/A"}
+                </TableCell>
+                <TableCell>{lawsuit.date || "N/A"}</TableCell>
                 <TableCell>
                   <Badge
                     variant={
@@ -437,6 +450,14 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
           </TableBody>
         </Table>
       </section>
+      <div className="flex items-center justify-center">
+        <Button
+          type="button"
+          className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
+        >
+          Get Points
+        </Button>
+      </div>
     </div>
   );
 };
