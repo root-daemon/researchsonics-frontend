@@ -82,7 +82,7 @@ export default function Home() {
               </Button>
             </DialogTrigger>
             <DialogContent className="border-2 border-[#f6c90e]">
-              <CreateClient />
+              <CreateClient closeDialog={() => setIsDialogOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>

@@ -16,13 +16,18 @@ import { FileUploader } from "@/components/file-uploader";
 import { FileText, ChevronRight, ChevronLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-export default function CreateClient() {
+export default function CreateClient({
+  closeDialog,
+}: {
+  closeDialog: () => void;
+}) {
   const [clientName, setClientName] = useState("");
   const [clientDescription, setClientDescription] = useState("");
   const [activeTab, setActiveTab] = useState("name");
   const [documents, setDocuments] = useState<File[]>([]);
   const [clientId, setClientId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleDocumentUpload = (files: File[]) => {
     setDocuments((prevDocuments) => [...prevDocuments, ...files]);
@@ -53,28 +58,6 @@ export default function CreateClient() {
           const result = await response.json();
           setClientId(result.client_id);
           setActiveTab("documents");
-
-          if (documents.length > 0) {
-            const formData = new FormData();
-            documents.forEach((doc) => formData.append("file", doc));
-
-            const uploadResponse = await fetch(
-              `http://localhost:8000/client/${result.client_id}/nda/upload`,
-              {
-                method: "POST",
-                headers: {
-                  accept: "application/json",
-                },
-                body: formData,
-              },
-            );
-
-            if (!uploadResponse.ok) {
-              throw new Error("Failed to upload documents");
-            }
-
-            console.log("Documents uploaded successfully");
-          }
         } else {
           throw new Error("Failed to create client");
         }
@@ -83,6 +66,41 @@ export default function CreateClient() {
       } finally {
         setIsSubmitting(false);
       }
+    }
+  };
+
+  const handleDocumentUploadSubmit = async () => {
+    if (documents.length === 0) {
+      closeDialog();
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      documents.forEach((doc) => formData.append("file", doc));
+
+      const uploadResponse = await fetch(
+        `http://localhost:8000/client/${clientId}/nda/upload`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+          },
+          body: formData,
+        },
+      );
+
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload documents");
+      }
+
+      console.log("Documents uploaded successfully");
+      closeDialog();
+    } catch (error) {
+      console.error("Error uploading documents:", error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -132,7 +150,7 @@ export default function CreateClient() {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button type="button" variant="outline">
+                <Button type="button" variant="outline" onClick={closeDialog}>
                   Cancel
                 </Button>
                 <Button
@@ -182,6 +200,14 @@ export default function CreateClient() {
                 onClick={() => setActiveTab("name")}
               >
                 <ChevronLeft className="mr-2 h-4 w-4" /> Back
+              </Button>
+              <Button
+                type="button"
+                className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
+                onClick={handleDocumentUploadSubmit}
+                disabled={isUploading}
+              >
+                {isUploading ? "Uploading..." : "Finish"}
               </Button>
             </CardFooter>
           </TabsContent>
