@@ -9,7 +9,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { FileText, AlertTriangle } from "lucide-react";
 
-// Mock data
 const clients = [
   {
     id: 1,
@@ -48,7 +47,7 @@ export default function Home() {
       <h1 className="text-3xl font-bold mb-6 text-gray-800">Client Dashboard</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {clients.map((client) => (
-          <Card key={client.id} className="w-full border-t-4 border-[#f6c90e] shadow-lg">
+          <Card key={client.id} className="w-full border-2 border-[#f6c90e] shadow-lg">
             <CardHeader className="bg-white rounded-t-lg">
               <div className="flex items-center space-x-4">
                 <Avatar className="border-2 border-[#f6c90e]">
