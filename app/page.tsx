@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { FileText, AlertTriangle, Plus } from "lucide-react";
 import CreateClient from "./components/createClient";
-import clientsData from "@/lib/clients";
+import { Client, Document } from "@/types/Client";
 
 const Navbar = () => (
   <nav className="bg-white p-4 text-black">
@@ -34,10 +34,40 @@ const Navbar = () => (
 );
 
 export default function Home() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [clients, setClients] = useState(clientsData); 
+  const [clients, setClients] = useState<Client[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const router = useRouter(); 
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/client/", {
+          headers: {
+            Accept: "application/json",
+          },
+        });
+        const data = await response.json();
+
+        const processedClients: Client[] = data.map((client: any) => ({
+          ...client,
+          ndas:
+            client.documents?.filter((doc: Document) =>
+              doc.path.includes("/nda"),
+            ) || [],
+          lawsuits:
+            client.documents?.filter((doc: Document) =>
+              doc.path.includes("/lawsuit"),
+            ) || [],
+        }));
+
+        setClients(processedClients);
+      } catch (error) {
+        console.error("Error fetching client data:", error);
+      }
+    };
+
+    fetchClients();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -59,7 +89,7 @@ export default function Home() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {clients.map((client) => (
             <Card
-              key={client.id}
+              key={client._id}
               className="w-full border-2 border-[#f6c90e] shadow-lg"
             >
               <CardHeader className="rounded-t-lg bg-white">
@@ -92,7 +122,7 @@ export default function Home() {
                         {client.ndas.length > 0 ? (
                           client.ndas.map((nda) => (
                             <div
-                              key={nda.id}
+                              key={nda.name}
                               className="mb-2 flex items-center justify-between"
                             >
                               <div className="flex items-center">
@@ -105,7 +135,7 @@ export default function Home() {
                                 variant="outline"
                                 className="border-[#f6c90e] bg-[#f6c90e] text-gray-800"
                               >
-                                {nda.date}
+                                View
                               </Badge>
                             </div>
                           ))
@@ -124,7 +154,7 @@ export default function Home() {
                         {client.lawsuits.length > 0 ? (
                           client.lawsuits.map((lawsuit) => (
                             <div
-                              key={lawsuit.id}
+                              key={lawsuit.name}
                               className="mb-2 flex items-center justify-between"
                             >
                               <div className="flex items-center">
@@ -133,36 +163,18 @@ export default function Home() {
                                   {lawsuit.name}
                                 </span>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <Badge
-                                  variant={
-                                    lawsuit.status === "Active"
-                                      ? "destructive"
-                                      : lawsuit.status === "Pending"
-                                        ? "default"
-                                        : "secondary"
-                                  }
-                                  className={
-                                    lawsuit.status === "Active"
-                                      ? "bg-red-500"
-                                      : lawsuit.status === "Pending"
-                                        ? "bg-[#f6c90e] text-gray-800"
-                                        : "bg-green-500"
-                                  }
-                                >
-                                  {lawsuit.status}
-                                </Badge>
-                                <Badge
-                                  variant="outline"
-                                  className="text-gray-600"
-                                >
-                                  {lawsuit.date}
-                                </Badge>
-                              </div>
+                              <Badge
+                                variant="outline"
+                                className="border-[#f6c90e] bg-[#f6c90e] text-gray-800"
+                              >
+                                View
+                              </Badge>
                             </div>
                           ))
                         ) : (
-                          <p className="text-gray-500">No lawsuits filed.</p>
+                          <p className="text-gray-500">
+                            No lawsuits available.
+                          </p>
                         )}
                       </ScrollArea>
                     </AccordionContent>
@@ -174,8 +186,8 @@ export default function Home() {
                     size="sm"
                     className="border-gray-300 text-gray-700 hover:bg-gray-100"
                     onClick={() => {
-                      console.log(`Navigating to /client/${client.id}`);
-                      router.push(`/client/${client.id}`);
+                      console.log(`Navigating to /client/${client._id}`);
+                      router.push(`/client/${client._id}`);
                     }}
                   >
                     View Details
