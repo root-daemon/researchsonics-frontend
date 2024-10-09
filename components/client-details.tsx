@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
-import clientsData from "@/lib/clients";
+import { Client, Lawsuit, Nda } from "@/types/Client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -33,18 +33,47 @@ import {
 } from "@/components/ui/table";
 import { Plus, ArrowLeft, Trash2 } from "lucide-react";
 
-const getClientById = (id: number) => {
-  return clientsData.find((client: { id: number }) => client.id === id);
+const getClientById = async (id: string): Promise<Client | null> => {
+  try {
+    const response = await fetch(`http://localhost:8000/client/${id}`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch client");
+    }
+
+    const data = await response.json();
+
+    const ndas =
+      data.documents?.filter((doc: { path: string }) =>
+        doc.path.includes("/nda/"),
+      ) || [];
+
+    const lawsuits =
+      data.documents?.filter((doc: { path: string }) =>
+        doc.path.includes("/lawsuit/"),
+      ) || [];
+
+    return {
+      ...data,
+      ndas,
+      lawsuits,
+    };
+  } catch (error) {
+    console.error("Error fetching client:", error);
+    return null;
+  }
 };
 
 interface ClientDetailsProps {
-  id: number;
+  id: string;
 }
 
 export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
-  const [client, setClient] = useState(
-    id ? getClientById(parseInt(id as unknown as string, 10)) : null,
-  );
+  const [client, setClient] = useState<Client | null>(null);
   const [isNdaDialogOpen, setIsNdaDialogOpen] = useState(false);
   const [isLawsuitDialogOpen, setIsLawsuitDialogOpen] = useState(false);
   const [newNda, setNewNda] = useState({ name: "", date: "" });
@@ -54,13 +83,25 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
     status: "Pending",
   });
   const router = useRouter();
+
+  useEffect(() => {
+    if (id) {
+      getClientById(id).then((clientData) => {
+        if (clientData) {
+          setClient(clientData);
+        }
+      });
+    }
+  }, [id]);
+
+  // Handle adding new NDA
   const handleAddNda = () => {
     if (newNda.name && newNda.date && client) {
       const updatedClient = {
         ...client,
         ndas: [
           ...(client.ndas || []),
-          { ...newNda, id: (client.ndas?.length || 0) + 1 },
+          { ...newNda, id: (client.ndas?.length || 0) + 1, path: "" }, // Ensure path is added
         ],
       };
 
@@ -70,13 +111,18 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
     }
   };
 
+  // Handle adding new lawsuit
   const handleAddLawsuit = () => {
     if (newLawsuit.name && newLawsuit.date && client) {
       const updatedClient = {
         ...client,
         lawsuits: [
           ...(client.lawsuits || []),
-          { ...newLawsuit, id: (client.lawsuits?.length || 0) + 1 },
+          {
+            ...newLawsuit,
+            id: (client.lawsuits?.length || 0) + 1,
+            path: "", // Ensure path is added
+          },
         ],
       };
       setClient(updatedClient);
@@ -85,6 +131,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
     }
   };
 
+  // Handle deleting an NDA
   const handleDeleteNda = (ndaId: number) => {
     if (client) {
       const updatedClient = {
@@ -95,6 +142,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
     }
   };
 
+  // Handle deleting a lawsuit
   const handleDeleteLawsuit = (lawsuitId: number) => {
     if (client) {
       const updatedClient = {
@@ -105,6 +153,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
     }
   };
 
+  // Show a loading state while fetching data
   if (!client) {
     return <div>Loading...</div>;
   }
@@ -121,7 +170,6 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
 
       <div className="mb-12 flex items-center space-x-4">
         <Avatar className="h-24 w-24 border-4 border-[#f6c90e]">
-          <AvatarImage src={client.avatar} alt={client.name} />
           <AvatarFallback className="bg-[#f6c90e] text-3xl text-gray-800">
             {client.name.slice(0, 2).toUpperCase()}
           </AvatarFallback>
@@ -134,6 +182,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
         </div>
       </div>
 
+      {/* NDA Section */}
       <section className="mb-12">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-3xl font-semibold text-gray-800">NDAs</h2>
@@ -197,7 +246,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {client.ndas.map((nda) => (
+            {client.ndas.map((nda: Nda) => (
               <TableRow key={nda.id}>
                 <TableCell className="font-medium">{nda.name}</TableCell>
                 <TableCell>{nda.date}</TableCell>
@@ -217,6 +266,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
         </Table>
       </section>
 
+      {/* Lawsuit Section */}
       <section>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-3xl font-semibold text-gray-800">Lawsuits</h2>
@@ -304,7 +354,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {client.lawsuits.map((lawsuit) => (
+            {client.lawsuits.map((lawsuit: Lawsuit) => (
               <TableRow key={lawsuit.id}>
                 <TableCell className="font-medium">{lawsuit.name}</TableCell>
                 <TableCell>{lawsuit.date}</TableCell>
