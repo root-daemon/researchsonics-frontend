@@ -124,7 +124,7 @@ export default function Home() {
 
       const blob = await response.blob();
       const contentDisposition = response.headers.get("Content-Disposition");
-      let filename = ndaSlug; // Default filename
+      let filename = ndaSlug;
 
       if (contentDisposition) {
         const match = contentDisposition.match(/filename="?(.+)"?/);
@@ -158,7 +158,7 @@ export default function Home() {
 
       const blob = await response.blob();
       const contentDisposition = response.headers.get("Content-Disposition");
-      let filename = lawSlug; // Default filename
+      let filename = lawSlug;
 
       if (contentDisposition) {
         const match = contentDisposition.match(/filename="?(.+)"?/);
