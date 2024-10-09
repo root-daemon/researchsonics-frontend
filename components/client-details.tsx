@@ -420,6 +420,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
         <Button
           type="button"
           className="mt-20 bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]"
+          onClick={() => router.push(`/client/${id}/lawsuit`)}
         >
           Get Points
         </Button>

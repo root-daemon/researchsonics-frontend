@@ -110,15 +110,12 @@ export default function Home() {
     setIsDialogOpen(false);
   };
 
-  // **Download function for NDAs**
   const downloadNda = async (clientId: string, ndaSlug: string) => {
     const url = `http://localhost:8000/client/${clientId}/nda/${ndaSlug}`;
     try {
       const response = await fetch(url, {
         method: "GET",
-        headers: {
-          // Include any necessary headers, such as authentication tokens
-        },
+        headers: {},
       });
 
       if (!response.ok) {
@@ -136,7 +133,6 @@ export default function Home() {
         }
       }
 
-      // Create a link to download the file
       const link = document.createElement("a");
       link.href = window.URL.createObjectURL(blob);
       link.download = filename;
@@ -146,6 +142,40 @@ export default function Home() {
     } catch (error) {
       console.error("Error downloading NDA:", error);
       alert("Failed to download NDA. Please try again.");
+    }
+  };
+  const downloadLawSuit = async (clientId: string, lawSlug: string) => {
+    const url = `http://localhost:8000/client/${clientId}/lawsuit/${lawSlug}`;
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {},
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error downloading file: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let filename = lawSlug; // Default filename
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?(.+)"?/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading LawSuit:", error);
+      alert("Failed to download LawSuit. Please try again.");
     }
   };
 
@@ -274,6 +304,12 @@ export default function Home() {
                                       <Badge
                                         variant="outline"
                                         className="border-[#f6c90e] bg-[#f6c90e] text-gray-800"
+                                        onClick={() =>
+                                          downloadLawSuit(
+                                            client._id,
+                                            lawsuit.slug,
+                                          )
+                                        }
                                       >
                                         View
                                       </Badge>
