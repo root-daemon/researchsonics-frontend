@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import router from "next/router";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,7 +32,6 @@ import {
 } from "@/components/ui/table";
 import { Plus, ArrowLeft, Trash2 } from "lucide-react";
 
-// This would typically come from an API or database
 const getClientById = (id: number) => {
   const clients = [
     {
@@ -101,7 +101,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
     date: "",
     status: "Pending",
   });
-
+  const router = useRouter();
   const handleAddNda = () => {
     if (newNda.name && newNda.date && client) {
       const updatedClient = {
@@ -235,34 +235,34 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
             </DialogContent>
           </Dialog>
         </div>
-        
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {client.ndas.map((nda) => (
+              <TableRow key={nda.id}>
+                <TableCell className="font-medium">{nda.name}</TableCell>
+                <TableCell>{nda.date}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteNda(nda.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {client.ndas.map((nda) => (
-                <TableRow key={nda.id}>
-                  <TableCell className="font-medium">{nda.name}</TableCell>
-                  <TableCell>{nda.date}</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteNda(nda.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+            ))}
+          </TableBody>
+        </Table>
       </section>
 
       <section>
