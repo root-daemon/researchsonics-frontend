@@ -14,7 +14,7 @@ export default function Navbar() {
       <div className="container mx-auto flex items-center justify-between">
         <Link
           href="/"
-          className="text-xl font-bold text-gray-800 transition-colors hover:text-gray-600"
+          className="text-xl font-bold text-gray-800 underline underline-offset-1 transition-colors hover:text-gray-600"
         >
           legaldash.ai
         </Link>
@@ -31,7 +31,7 @@ export default function Navbar() {
             )}
           </div>
           <Avatar className="cursor-pointer">
-            <AvatarFallback className="bg-slate-600 text-black">
+            <AvatarFallback className="bg-[#f6c90e] text-white">
               AM
             </AvatarFallback>
           </Avatar>
