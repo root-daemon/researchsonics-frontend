@@ -82,7 +82,7 @@ const useAnalysisData = (clientId: string) => {
 
         const filteredData: AnalysisData = Object.fromEntries(
           Object.entries(transformedData).filter(
-            ([_, items]) => !items.some((item) => item.type === "Error"),
+            ([, items]) => !items.some((item) => item.type === "Error"),
           ),
         );
 

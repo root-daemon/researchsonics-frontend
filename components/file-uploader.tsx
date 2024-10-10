@@ -38,6 +38,7 @@ export function FileUploader({ onUpload }: FileUploaderProps) {
   const removeFile = (fileToRemove: File) => {
     setFiles((files) => files.filter((file) => file !== fileToRemove));
     setUploadProgress((prev) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [fileToRemove.name]: _, ...rest } = prev;
       return rest;
     });
@@ -86,7 +87,7 @@ export function FileUploader({ onUpload }: FileUploaderProps) {
         />
         <Upload className="mx-auto h-12 w-12 text-gray-400" />
         <p className="mt-2 text-sm text-gray-600">
-          Drag 'n' drop some files here, or click to select files
+          Drag &#39;n&#39; drop some files here, or click to select files
         </p>
       </div>
       {files.length > 0 && (
