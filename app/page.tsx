@@ -4,16 +4,15 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Client } from "@/types/Client";
 import Navbar from "./components/Navbar";
 import ClientCard from "./components/ClientCard";
 import CreateClient from "./components/CreateClient";
-import SkeletonCard from "./components/SkeletonCard";
 import { fetchClients, deleteClient } from "@/api/clientApi";
 
-export default function Home() {
+export default function Component() {
   const [clients, setClients] = useState<Client[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,55 +48,111 @@ export default function Home() {
     setIsDialogOpen(false);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+    },
+    exit: {
+      y: -20,
+      opacity: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
       <Navbar />
-      <div className="container mx-auto p-4">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-800">Client Dashboard</h2>
+      <motion.div
+        className="container mx-auto p-4 sm:p-6 lg:p-8"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="mb-8 flex flex-col items-center justify-between sm:flex-row">
+          <motion.h2
+            className="mb-4 text-3xl font-bold text-gray-800 sm:mb-0"
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            Client Dashboard
+          </motion.h2>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#f6c90e] text-gray-800 hover:bg-[#e0b60d]">
-                <Plus className="mr-2 h-4 w-4" /> Add Client
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button className="bg-[#f6c90e] text-gray-800 shadow-md transition-all duration-300 hover:bg-[#e0b60d] hover:shadow-lg">
+                  <Plus className="mr-2 h-4 w-4" /> Add Client
+                </Button>
+              </motion.div>
             </DialogTrigger>
-            <DialogContent className="border-2 border-[#f6c90e]">
+            <DialogContent className="max-w-fit border-2 border-[#f6c90e]">
               <CreateClient closeDialog={handleClientCreated} />
             </DialogContent>
           </Dialog>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence>
-            {isLoading
-              ? Array.from({ length: 6 }).map((_, index) => (
-                  <motion.div
-                    key={`skeleton-${index}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <SkeletonCard />
-                  </motion.div>
-                ))
-              : clients.map((client) => (
-                  <motion.div
-                    key={client._id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <ClientCard
-                      client={client}
-                      onDelete={handleDeleteClient}
-                      onManage={() => router.push(`/client/${client._id}`)}
-                    />
-                  </motion.div>
-                ))}
+        <motion.div
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <AnimatePresence mode="popLayout">
+            {isLoading ? (
+              <motion.div
+                key="loader"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="col-span-full flex h-64 items-center justify-center"
+              >
+                <Loader2 className="h-12 w-12 animate-spin text-[#f6c90e]" />
+              </motion.div>
+            ) : clients.length > 0 ? (
+              clients.map((client) => (
+                <motion.div
+                  key={client._id}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  layout
+                >
+                  <ClientCard
+                    client={client}
+                    onDelete={handleDeleteClient}
+                    onManage={() => router.push(`/client/${client._id}`)}
+                  />
+                </motion.div>
+              ))
+            ) : (
+              <motion.div
+                key="no-clients"
+                variants={itemVariants}
+                className="col-span-full mt-8 text-center text-gray-500"
+              >
+                No clients found. Add a new client to get started!
+              </motion.div>
+            )}
           </AnimatePresence>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

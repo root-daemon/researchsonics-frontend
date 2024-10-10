@@ -76,22 +76,21 @@ export default function CreateClient({
     setIsUploading(true);
 
     try {
-      const formData = new FormData();
-      documents.forEach((doc) => formData.append("file", doc));
-
-      const uploadResponse = await fetch(
-        `http://localhost:8000/client/${clientId}/nda/upload`,
-        {
+      const uploadPromises = documents.map(async (doc) => {
+        const formData = new FormData();
+        formData.append("file", doc);
+        return fetch(`http://localhost:8000/client/${clientId}/nda/upload`, {
           method: "POST",
           headers: {
             accept: "application/json",
           },
           body: formData,
-        },
-      );
+        }).then((res) => {
+          if (!res.ok) throw new Error("Failed to upload document");
+        });
+      });
 
-      if (!uploadResponse.ok) throw new Error("Failed to upload documents");
-
+      await Promise.all(uploadPromises);
       console.log("Documents uploaded successfully");
       closeDialog();
     } catch (error) {
@@ -102,7 +101,7 @@ export default function CreateClient({
   };
 
   return (
-    <div className="container mx-auto max-w-full bg-white p-4 sm:max-w-2xl">
+    <div className="container mx-auto bg-white p-4 sm:max-w-2xl">
       <h1 className="mb-6 text-3xl font-bold text-gray-800">
         Create New Client
       </h1>
@@ -170,10 +169,7 @@ export default function CreateClient({
 
           <TabsContent value="documents">
             <CardHeader>
-              <CardTitle>Upload Documents</CardTitle>
-              <CardDescription>
-                Upload any relevant documents for the client.
-              </CardDescription>
+              <CardTitle>Upload NDAs</CardTitle>
             </CardHeader>
             <CardContent className="max-h-72 space-y-4 overflow-auto">
               <FileUploader onUpload={handleDocumentUpload} />

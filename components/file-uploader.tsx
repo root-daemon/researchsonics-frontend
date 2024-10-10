@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Upload, X, CheckCircle, AlertCircle } from "lucide-react";
 
-interface FileUploaderProps {
+interface FileUploaderProps{
   onUpload: (files: File[]) => void;
 }
 
