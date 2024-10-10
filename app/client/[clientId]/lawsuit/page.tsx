@@ -53,7 +53,7 @@ export default function Component() {
         const lawsuitPath = `${clientId}/lawsuit/${lawsuitSlug}`;
 
         const response = await fetch(
-          "http://0.0.0.0:8000/chat/analyze-documents-minio",
+          "http://localhost:8000/chat/analyze-documents-minio",
           {
             method: "POST",
             headers: {
