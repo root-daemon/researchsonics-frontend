@@ -248,220 +248,227 @@ export default function ClientDetailsPage({
   if (!client) return <div>No client data found.</div>;
 
   return (
-    <div className="xl:px-28">
+    <>
       <Navbar />
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="min-h-screen bg-gray-100 p-8"
-      >
-        <Button
-          onClick={() => router.push("/")}
-          variant="outline"
-          className="mb-8 transition-transform duration-200 hover:scale-105"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-        </Button>
 
+      <div className="bg-gray-100 xl:px-28">
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mb-12 flex items-center space-x-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="min-h-screen bg-gray-100 p-8"
         >
-          <Avatar className="h-24 w-24 border-4 border-[#f6c90e] transition-transform duration-200 hover:scale-110">
-            <AvatarFallback className="bg-[#f6c90e] text-3xl text-gray-800">
-              {client.name.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-4xl font-bold text-gray-800">{client.name}</h1>
-            <p className="text-xl text-gray-600">
-              {client.ndas.length} NDAs, {client.lawsuits.length} Lawsuits
-            </p>
+          <Button
+            onClick={() => router.push("/")}
+            variant="outline"
+            className="mb-8 transition-transform duration-200 hover:scale-105"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+          </Button>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mb-12 flex items-center space-x-4"
+          >
+            <Avatar className="h-24 w-24 border-4 border-[#f6c90e] transition-transform duration-200 hover:scale-110">
+              <AvatarFallback className="bg-[#f6c90e] text-3xl text-gray-800">
+                {client.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-4xl font-bold text-gray-800">
+                {client.name}
+              </h1>
+              <p className="text-xl text-gray-600">
+                {client.ndas.length} NDAs, {client.lawsuits.length} Lawsuits
+              </p>
+            </div>
+          </motion.div>
+
+          <motion.section
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mb-12"
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-3xl font-semibold text-gray-800">NDAs</h2>
+              <Dialog
+                open={isDialogOpen.nda}
+                onOpenChange={(open) =>
+                  setIsDialogOpen((prev) => ({ ...prev, nda: open }))
+                }
+              >
+                <DialogTrigger asChild>
+                  <Button className="bg-[#f6c90e] text-gray-800 transition-colors duration-200 hover:bg-[#e0b60d]">
+                    <Plus className="mr-2 h-4 w-4" /> Add NDA
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-fit">
+                  <DialogHeader>
+                    <DialogTitle>Add New NDA</DialogTitle>
+                  </DialogHeader>
+                  <FileUploader
+                    onUpload={(files) =>
+                      setDocuments((prev) => ({ ...prev, nda: files }))
+                    }
+                  />
+                  <div className="space-y-2">
+                    <Label>Uploaded Documents</Label>
+                    {documents.nda.length > 0 ? (
+                      <ul className="space-y-2">
+                        {documents.nda.map((doc, index) => (
+                          <motion.li
+                            key={index}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                            className="flex items-center space-x-2"
+                          >
+                            <FileText className="h-4 w-4 text-[#f6c90e]" />
+                            <span className="text-sm text-gray-600">
+                              {doc.name}
+                            </span>
+                          </motion.li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        No documents uploaded yet.
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      className="bg-[#f6c90e] text-gray-800 transition-colors duration-200 hover:bg-[#e0b60d]"
+                      onClick={() => handleUploadSubmit("nda")}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        "Finish"
+                      )}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>{renderDocuments("nda", client.ndas)}</TableBody>
+            </Table>
+          </motion.section>
+
+          <motion.section
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-3xl font-semibold text-gray-800">Lawsuits</h2>
+              <Dialog
+                open={isDialogOpen.lawsuit}
+                onOpenChange={(open) =>
+                  setIsDialogOpen((prev) => ({ ...prev, lawsuit: open }))
+                }
+              >
+                <DialogTrigger asChild>
+                  <Button className="bg-[#f6c90e] text-gray-800 transition-colors duration-200 hover:bg-[#e0b60d]">
+                    <Plus className="mr-2 h-4 w-4" /> Add Lawsuit
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-fit">
+                  <DialogHeader>
+                    <DialogTitle>Add New Lawsuit</DialogTitle>
+                  </DialogHeader>
+                  <FileUploader
+                    onUpload={(files) =>
+                      setDocuments((prev) => ({ ...prev, lawsuit: files }))
+                    }
+                  />
+                  <div className="space-y-2">
+                    <Label>Uploaded Documents</Label>
+                    {documents.lawsuit.length > 0 ? (
+                      <ul className="space-y-2">
+                        {documents.lawsuit.map((doc, index) => (
+                          <motion.li
+                            key={index}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                            className="flex items-center space-x-2"
+                          >
+                            <FileText className="h-4 w-4 text-[#f6c90e]" />
+                            <span className="text-sm text-gray-600">
+                              {doc.name}
+                            </span>
+                          </motion.li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        No documents uploaded yet.
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      className="bg-[#f6c90e] text-gray-800 transition-colors duration-200 hover:bg-[#e0b60d]"
+                      onClick={() => handleUploadSubmit("lawsuit")}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        "Finish"
+                      )}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {renderDocuments("lawsuit", client.lawsuits)}
+              </TableBody>
+            </Table>
+          </motion.section>
+
+          <div className="flex items-center justify-center">
+            <Button
+              type="button"
+              className="mt-20 bg-[#f6c90e] text-gray-800 transition-all duration-200 hover:scale-105 hover:bg-[#e0b60d]"
+              onClick={() => router.push(`/client/${clientId}/lawsuit`)}
+            >
+              Get Points
+            </Button>
           </div>
         </motion.div>
-
-        <motion.section
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mb-12"
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-3xl font-semibold text-gray-800">NDAs</h2>
-            <Dialog
-              open={isDialogOpen.nda}
-              onOpenChange={(open) =>
-                setIsDialogOpen((prev) => ({ ...prev, nda: open }))
-              }
-            >
-              <DialogTrigger asChild>
-                <Button className="bg-[#f6c90e] text-gray-800 transition-colors duration-200 hover:bg-[#e0b60d]">
-                  <Plus className="mr-2 h-4 w-4" /> Add NDA
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-fit">
-                <DialogHeader>
-                  <DialogTitle>Add New NDA</DialogTitle>
-                </DialogHeader>
-                <FileUploader
-                  onUpload={(files) =>
-                    setDocuments((prev) => ({ ...prev, nda: files }))
-                  }
-                />
-                <div className="space-y-2">
-                  <Label>Uploaded Documents</Label>
-                  {documents.nda.length > 0 ? (
-                    <ul className="space-y-2">
-                      {documents.nda.map((doc, index) => (
-                        <motion.li
-                          key={index}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
-                          className="flex items-center space-x-2"
-                        >
-                          <FileText className="h-4 w-4 text-[#f6c90e]" />
-                          <span className="text-sm text-gray-600">
-                            {doc.name}
-                          </span>
-                        </motion.li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      No documents uploaded yet.
-                    </p>
-                  )}
-                </div>
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    className="bg-[#f6c90e] text-gray-800 transition-colors duration-200 hover:bg-[#e0b60d]"
-                    onClick={() => handleUploadSubmit("nda")}
-                    disabled={isUploading}
-                  >
-                    {isUploading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Uploading...
-                      </>
-                    ) : (
-                      "Finish"
-                    )}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>{renderDocuments("nda", client.ndas)}</TableBody>
-          </Table>
-        </motion.section>
-
-        <motion.section
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-3xl font-semibold text-gray-800">Lawsuits</h2>
-            <Dialog
-              open={isDialogOpen.lawsuit}
-              onOpenChange={(open) =>
-                setIsDialogOpen((prev) => ({ ...prev, lawsuit: open }))
-              }
-            >
-              <DialogTrigger asChild>
-                <Button className="bg-[#f6c90e] text-gray-800 transition-colors duration-200 hover:bg-[#e0b60d]">
-                  <Plus className="mr-2 h-4 w-4" /> Add Lawsuit
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-fit">
-                <DialogHeader>
-                  <DialogTitle>Add New Lawsuit</DialogTitle>
-                </DialogHeader>
-                <FileUploader
-                  onUpload={(files) =>
-                    setDocuments((prev) => ({ ...prev, lawsuit: files }))
-                  }
-                />
-                <div className="space-y-2">
-                  <Label>Uploaded Documents</Label>
-                  {documents.lawsuit.length > 0 ? (
-                    <ul className="space-y-2">
-                      {documents.lawsuit.map((doc, index) => (
-                        <motion.li
-                          key={index}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
-                          className="flex items-center space-x-2"
-                        >
-                          <FileText className="h-4 w-4 text-[#f6c90e]" />
-                          <span className="text-sm text-gray-600">
-                            {doc.name}
-                          </span>
-                        </motion.li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      No documents uploaded yet.
-                    </p>
-                  )}
-                </div>
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    className="bg-[#f6c90e] text-gray-800 transition-colors duration-200 hover:bg-[#e0b60d]"
-                    onClick={() => handleUploadSubmit("lawsuit")}
-                    disabled={isUploading}
-                  >
-                    {isUploading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Uploading...
-                      </>
-                    ) : (
-                      "Finish"
-                    )}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>{renderDocuments("lawsuit", client.lawsuits)}</TableBody>
-          </Table>
-        </motion.section>
-
-        <div className="flex items-center justify-center">
-          <Button
-            type="button"
-            className="mt-20 bg-[#f6c90e] text-gray-800 transition-all duration-200 hover:scale-105 hover:bg-[#e0b60d]"
-            onClick={() => router.push(`/client/${clientId}/lawsuit`)}
-          >
-            Get Points
-          </Button>
-        </div>
-      </motion.div>
-    </div>
+      </div>
+    </>
   );
 }
