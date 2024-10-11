@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getClientById } from "@/lib/getClient";
+import Navbar from "@/app/components/Navbar";
 
 interface AnalysisItem {
   type: string;
@@ -186,15 +187,18 @@ export default function NDAAnalysisResults() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8">
-      <h1 className="mb-6 text-center text-2xl font-bold">
-        NDA Analysis Results
-      </h1>
-      <div className="grid gap-6">
-        {Object.entries(analysisData).map(([section, items]) => (
-          <AnalysisSection key={section} section={section} items={items} />
-        ))}
+    <>
+      <Navbar />
+      <div className="container mx-auto p-4 md:p-6 lg:p-8">
+        <h1 className="mb-6 text-center text-2xl font-bold">
+          NDA Analysis Results
+        </h1>
+        <div className="grid gap-6">
+          {Object.entries(analysisData).map(([section, items]) => (
+            <AnalysisSection key={section} section={section} items={items} />
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -34,6 +34,7 @@ import {
 import { FileUploader } from "@/components/file-uploader";
 import { getClientById } from "@/lib/getClient";
 import { cn } from "@/lib/utils";
+import Navbar from "@/app/components/Navbar";
 
 export default function ClientDetailsPage({
   params,
@@ -185,53 +186,55 @@ export default function ClientDetailsPage({
     docs: (Nda | Lawsuit)[],
   ) => {
     return (
-      <AnimatePresence>
-        {docs.map((doc: Nda | Lawsuit) => (
-          <motion.tr
-            key={doc.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <TableCell className="font-medium">{doc.name || "N/A"}</TableCell>
-            {type === "lawsuit" && "status" in doc && (
-              <TableCell>
-                <Badge
-                  className={cn(
-                    "transition-colors duration-200",
-                    doc.status === "Active"
-                      ? "bg-red-500"
-                      : doc.status === "Pending"
-                        ? "bg-[#f6c90e] text-gray-800"
-                        : "bg-green-500",
-                  )}
+      <>
+        <AnimatePresence>
+          {docs.map((doc: Nda | Lawsuit) => (
+            <motion.tr
+              key={doc.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <TableCell className="font-medium">{doc.name || "N/A"}</TableCell>
+              {type === "lawsuit" && "status" in doc && (
+                <TableCell>
+                  <Badge
+                    className={cn(
+                      "transition-colors duration-200",
+                      doc.status === "Active"
+                        ? "bg-red-500"
+                        : doc.status === "Pending"
+                          ? "bg-[#f6c90e] text-gray-800"
+                          : "bg-green-500",
+                    )}
+                  >
+                    {doc.status}
+                  </Badge>
+                </TableCell>
+              )}
+              <TableCell className="text-right">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => downloadDocument(clientId, type, doc.slug)}
+                  className="mr-2 text-blue-500 transition-colors duration-200 hover:text-blue-700"
                 >
-                  {doc.status}
-                </Badge>
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDelete(type, doc.slug)}
+                  className="text-red-500 transition-colors duration-200 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </TableCell>
-            )}
-            <TableCell className="text-right">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => downloadDocument(clientId, type, doc.slug)}
-                className="mr-2 text-blue-500 transition-colors duration-200 hover:text-blue-700"
-              >
-                <Download className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleDelete(type, doc.slug)}
-                className="text-red-500 transition-colors duration-200 hover:text-red-700"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </TableCell>
-          </motion.tr>
-        ))}
-      </AnimatePresence>
+            </motion.tr>
+          ))}
+        </AnimatePresence>
+      </>
     );
   };
   if (isLoading) {
@@ -246,6 +249,7 @@ export default function ClientDetailsPage({
 
   return (
     <div className="xl:px-28">
+      <Navbar />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
