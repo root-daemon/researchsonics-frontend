@@ -34,7 +34,7 @@ export default function ClientCard({
     docType: string,
     docSlug: string,
   ) => {
-    const url = `http://localhost:8000/client/${clientId}/${docType}/${docSlug}`;
+    const url = `https://legaldash-ai-mgj7.onrender.com/client/${clientId}/${docType}/${docSlug}`;
     try {
       const response = await fetch(url, {
         method: "GET",

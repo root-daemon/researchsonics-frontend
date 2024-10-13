@@ -1,6 +1,6 @@
 import { Client, Document } from "@/types/Client";
 
-const API_URL = "http://localhost:8000";
+const API_URL = "https://legaldash-ai-mgj7.onrender.com";
 
 export const fetchClients = async (): Promise<Client[]> => {
   try {

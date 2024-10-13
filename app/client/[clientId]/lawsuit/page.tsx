@@ -140,19 +140,19 @@ async function fetchAnalysisData(
     const ndaPath = `${clientId}/nda/${firstNDA.slug}`;
     const lawsuitPath = `${clientId}/lawsuit/${firstLawsuit.slug}`;
 
-    const response = await fetch(
-      "http://localhost:8000/chat/analyze-documents-minio",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nda_path: ndaPath,
-          sue_letter_path: lawsuitPath,
-        }),
-      },
-    );
+        const response = await fetch(
+          "https://legaldash-ai-mgj7.onrender.com/chat/analyze-documents-minio",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              nda_path: ndaPath,
+              sue_letter_path: lawsuitPath,
+            }),
+          },
+        );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

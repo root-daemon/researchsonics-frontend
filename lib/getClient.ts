@@ -2,11 +2,14 @@ import { Client } from "@/types/Client";
 
 export const getClientById = async (id: string): Promise<Client | null> => {
   try {
-    const response = await fetch(`http://localhost:8000/client/${id}`, {
-      headers: {
-        Accept: "application/json",
+    const response = await fetch(
+      `https://legaldash-ai-mgj7.onrender.com/client/${id}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch client");

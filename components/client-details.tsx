@@ -72,7 +72,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
       ndaDocuments.forEach((doc) => formData.append("file", doc));
 
       const uploadResponse = await fetch(
-        `http://localhost:8000/client/${id}/nda/upload`,
+        `https://legaldash-ai-mgj7.onrender.com/client/${id}/nda/upload`,
         {
           method: "POST",
           headers: {
@@ -113,7 +113,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
       lawsuitDocuments.forEach((doc) => formData.append("file", doc));
 
       const uploadResponse = await fetch(
-        `http://localhost:8000/client/${id}/lawsuit/upload`,
+        `https://legaldash-ai-mgj7.onrender.com/client/${id}/lawsuit/upload`,
         {
           method: "POST",
           headers: {
@@ -145,7 +145,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
   const handleDeleteNda = async (ndaId: number) => {
     try {
       const deleteResponse = await fetch(
-        `http://localhost:8000/client/${id}/nda/${ndaId}`,
+        `https://legaldash-ai-mgj7.onrender.com/client/${id}/nda/${ndaId}`,
         {
           method: "DELETE",
           headers: {
@@ -172,7 +172,7 @@ export const ClientDetails: React.FC<ClientDetailsProps> = ({ id }) => {
   const handleDeleteLawsuit = async (lawsuitId: number) => {
     try {
       const deleteResponse = await fetch(
-        `http://localhost:8000/client/${id}/lawsuit/${lawsuitId}`,
+        `https://legaldash-ai-mgj7.onrender.com/client/${id}/lawsuit/${lawsuitId}`,
         {
           method: "DELETE",
           headers: {

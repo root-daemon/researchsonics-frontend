@@ -45,14 +45,17 @@ export default function CreateClient({
           documents: [],
         };
 
-        const response = await fetch("http://localhost:8000/client/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
+        const response = await fetch(
+          "https://legaldash-ai-mgj7.onrender.com/client/",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              accept: "application/json",
+            },
+            body: JSON.stringify(clientData),
           },
-          body: JSON.stringify(clientData),
-        });
+        );
 
         if (!response.ok) throw new Error("Failed to create client");
 
@@ -79,13 +82,16 @@ export default function CreateClient({
       const uploadPromises = documents.map(async (doc) => {
         const formData = new FormData();
         formData.append("file", doc);
-        return fetch(`http://localhost:8000/client/${clientId}/nda/upload`, {
-          method: "POST",
-          headers: {
-            accept: "application/json",
+        return fetch(
+          `https://legaldash-ai-mgj7.onrender.com/client/${clientId}/nda/upload`,
+          {
+            method: "POST",
+            headers: {
+              accept: "application/json",
+            },
+            body: formData,
           },
-          body: formData,
-        }).then((res) => {
+        ).then((res) => {
           if (!res.ok) throw new Error("Failed to upload document");
         });
       });

@@ -101,7 +101,7 @@ export default function ClientDetailsPage({
   };
 
   const handleUploadSubmit = async (type: "nda" | "lawsuit") => {
-    const url = `http://localhost:8000/client/${clientId}/${type}/upload`;
+    const url = `https://legaldash-ai-mgj7.onrender.com/client/${clientId}/${type}/upload`;
     const documentList = type === "nda" ? documents.nda : documents.lawsuit;
 
     if (documentList.length === 0) {
@@ -128,7 +128,7 @@ export default function ClientDetailsPage({
     docType: string,
     docSlug: string,
   ) => {
-    const url = `http://localhost:8000/client/${clientId}/${docType}/${docSlug}`;
+    const url = `https://legaldash-ai-mgj7.onrender.com/client/${clientId}/${docType}/${docSlug}`;
     try {
       const response = await fetch(url, {
         method: "GET",
@@ -163,7 +163,7 @@ export default function ClientDetailsPage({
   };
 
   const handleDelete = async (type: "nda" | "lawsuit", slug: string) => {
-    const url = `http://localhost:8000/client/${clientId}/${type}/${slug}`;
+    const url = `https://legaldash-ai-mgj7.onrender.com/client/${clientId}/${type}/${slug}`;
     try {
       await deleteItem(url);
       console.log(`${type} item deleted successfully`);
